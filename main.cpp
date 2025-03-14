@@ -16,41 +16,47 @@ int bCol = 8;
 vector<vector<string>> matrix(bRow, vector<string>(bCol, "_")); // Set default value to "_"
 
 //handle block models (in true/false models)
-int tetRow = 4;
-int tetCol = 4;
+int tetRow = 8;
+int tetCol = 8;
 vector<vector<bool>> tetModels(tetRow, vector<bool>(tetCol));
-class tetBlocks{
-    public:
-        void operator[](int index){
-            switch(index){
-                case 0: //2x2
-                    for(int i = 0; i < 2; i++){
-                        for(int j = 0; j < 2; j++){
-                            tetModels[i][j] = true;
-                        }
-                    }
-                    break;
-                case 1:
-                    
-                    break;
-                
-            }
+void initializeTetBlocks(int index){
+    //empty matrix for new blocks
+    for(int i = 0; i < tetRow; i++){
+        for(int j = 0; j < tetCol; j++){
+            tetModels[i][j] = false;
         }
-};
+    }
+
+    //initialize true/false statements
+    switch(index){
+        case 0:
+            for(int i = 0; i < 2; i++){
+                for(int j = 0; j < 2; j++){
+                    tetModels[i][j] = true;
+                }
+            }
+            break;
+        default:
+            cout << "invalid request statement, can't fullfill index requirements." << endl;
+            break;
+    }
+}
+
+
+void clearTerm(){
+    system("clear");
+}
 
 
 // Function to print matrix
 void printMatrix() {
+    clearTerm();
     for (int i = 0; i < bRow; i++) {
         for (int j = 0; j < bCol; j++) {
             cout << matrix[i][j] << " ";
         }
         cout << endl;
     }
-}
-
-void clearTerm(){
-    system("clear");
 }
 
 int main() {
@@ -64,6 +70,15 @@ int main() {
     if(playerIn == "play"){
         cout << "Intializing board...\n";
         sleep_for(seconds(2));
+        printMatrix();
+        initializeTetBlocks(0);
+        for(int i = 0; i < tetRow; i++){
+            for(int j = 0; j < tetCol; j++){
+                if(tetModels[i][j]){
+                    matrix[i][j] = "X";
+                }
+            }
+        }
         printMatrix();
     }
     return 0;
