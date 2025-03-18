@@ -13,6 +13,7 @@ using namespace chrono;
 // Initialize board
 int bRow = 16;
 int bCol = 8;
+int sizeOfValidBlock;
 vector<vector<string>> matrix(bRow, vector<string>(bCol, "_")); // Set default value to "_"
 
 //handle block models (in true/false models)
@@ -33,6 +34,8 @@ void initializeTetBlocks(int index){
             for(int i = 0; i < 2; i++){
                 for(int j = 0; j < 2; j++){
                     tetModels[i][j] = true;
+                    //set the size of the valid block
+                    sizeOfValidBlock = 2;
                 }
             }
             break;
@@ -40,6 +43,7 @@ void initializeTetBlocks(int index){
             for(int i = 0; i < 2; i++){
                 for(int j = 0; j < 3; j++){
                     tetModels[i][j] = true;
+                    sizeOfValidBlock = 3;
                 }
             }
             break;
@@ -47,6 +51,7 @@ void initializeTetBlocks(int index){
             for(int i = 0; i < 3; i++){
                 for(int j = 0; j < 3; j++){
                     tetModels[i][j] = true;
+                    sizeOfValidBlock = 3;
                 }
             }
             break;
@@ -81,6 +86,51 @@ void printMatrix() {
     }
 }
 
+void blockMovement(){
+    int blockRow = 0;
+    bool isBlock = false;
+    while(true){
+        //stop block from moving
+        if(blockRow + sizeOfValidBlock >= bRow){ //block hits block under it or hits bottom
+            isBlock = true;
+            cout << "debug01" << endl;
+        }else{
+            for(int i = 0; i < tetRow; i++){
+                if(matrix[sizeOfValidBlock - 1][i] == "X"){
+                    isBlock = true;
+                    cout << "debug02" << endl;
+                    break;
+                }
+            }
+            if(isBlock) break;
+        }
+
+        // Clear previous position
+        for(int i = 0; i < tetRow; i++){
+            for(int j = 0; j < tetCol; j++){
+                if(tetModels[i][j]){
+                    matrix[blockRow + i][j] = "_";
+                }
+            }
+        }
+
+        // Move block down
+        blockRow++;
+
+        // Update block position
+        for(int i = 0; i < tetRow; i++){
+            for(int j = 0; j < tetCol; j++){
+                if(tetModels[i][j]){
+                    matrix[blockRow + i][j] = "X";
+                }
+            }
+        }
+
+        printMatrix();
+        sleep_for(seconds(1));
+    }
+}
+
 int main() {
     cout << "\033[32m"; //green output text
     string playerIn;
@@ -94,7 +144,7 @@ int main() {
         cout << "Intializing board...\n";
         sleep_for(seconds(1));
         printMatrix();
-        initializeTetBlocks(3); //parameter creates the tetris block
+        initializeTetBlocks(0); //parameter creates the tetris block
         for(int i = 0; i < tetRow; i++){
             for(int j = 0; j < tetCol; j++){
                 if(tetModels[i][j]){
@@ -103,35 +153,11 @@ int main() {
             }
         }
         printMatrix();
-        
-        int blockRow = 0;
-        while(true){
-            if(blockRow + tetRow >= bRow){
-                break;
-            }
 
-            //clear previous position
-            for(int i = 0; i < tetRow; i++){
-                for(int j = 0; j < tetCol; j++){
-                    if(tetModels[i][j]){
-                        matrix[blockRow + i][j] = "_";
-                    }
-                }
-            }
-            //move block down
-            blockRow++;
+        blockMovement();
 
-            //update block pos
-            for(int i = 0; i < tetRow; i++){
-                for(int j = 0; j < tetCol; j++){
-                    if(tetModels[i][j]){
-                        matrix[blockRow + i][j] = "X";
-                    }
-                }
-            }
-            printMatrix();
-            sleep_for(seconds(1));
-        }
+        initializeTetBlocks(1);
+        blockMovement();
     }
     return 0;
 }
