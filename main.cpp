@@ -87,23 +87,22 @@ void printMatrix() {
 }
 
 void blockMovement(){
-    int blockRow = 0;
     bool isBlock = false;
+    int blockRow = 0;
     while(true){
         //stop block from moving
-        if(blockRow + sizeOfValidBlock >= bRow){ //block hits block under it or hits bottom
+        if(blockRow + sizeOfValidBlock == bRow){
             isBlock = true;
-            cout << "debug01" << endl;
-        }else{
-            for(int i = 0; i < tetRow; i++){
-                if(matrix[sizeOfValidBlock - 1][i] == "X"){
-                    isBlock = true;
-                    cout << "debug02" << endl;
-                    break;
-                }
-            }
-            if(isBlock) break;
+            cout << "debug01" << " " << sizeOfValidBlock << " " << blockRow << " " << bRow << endl;
         }
+
+        for(int i = 0; i < tetRow; i++){
+            if(matrix[i][sizeOfValidBlock] == "X"){
+                isBlock = true;
+                cout << "debug02 " << endl;
+            }
+        }
+        if(isBlock) break;
 
         // Clear previous position
         for(int i = 0; i < tetRow; i++){
