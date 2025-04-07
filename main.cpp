@@ -8,8 +8,6 @@ using namespace std;
 using namespace this_thread;
 using namespace chrono;
 
-//
-
 // Initialize board
 int bRow = 16;
 int bCol = 8;
@@ -93,7 +91,7 @@ void blockMovement() {
 
     while (true) {
         // Check if block reaches bottom or another block
-        for (int i = tetRow - 1; i >= 0; i--) {  
+        for (int i = tetRow - 1; i >= 0; i--) {
             for (int j = 0; j < tetCol; j++) {
                 if (tetModels[i][j]) {
                     int newRow = blockRow + i + 1;  
