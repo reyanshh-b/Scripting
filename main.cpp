@@ -95,7 +95,7 @@ void blockMovement() {
             for (int j = 0; j < tetCol; j++) {
                 if (tetModels[i][j]) {
                     int newRow = blockRow + i + 1;  
-                    int newCol = blockCol + j + 4;
+                    int newCol = blockCol + j;
 
                     cout << i << " :: " << newRow << " + " << newCol << endl;
 
