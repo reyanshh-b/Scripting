@@ -41,7 +41,7 @@ void initializeTetBlocks(int index){
             for(int i = 0; i < 2; i++){
                 for(int j = 0; j < 3; j++){
                     tetModels[i][j] = true;
-                    sizeOfValidBlock = 3;
+                    sizeOfValidBlock = 2;
                 }
             }
             break;
