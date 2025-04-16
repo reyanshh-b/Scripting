@@ -97,10 +97,10 @@ void blockMovement() {
                     int newRow = blockRow + i + 1;  
                     int newCol = blockCol + j;
 
-                    cout << i << " :: " << newRow << " + " << newCol << endl;
+                    cout << i << " :: " << newRow << " + " << newCol << endl; //debug
 
                     if (newRow >= bRow || (matrix[newRow][newCol] == "X" && !tetModels[i][j])) {
-                        cout << "db: " << newRow << endl;
+                        cout << "db: " << newRow << endl; //debug
                         isBlock = true;
                     }
                 }
