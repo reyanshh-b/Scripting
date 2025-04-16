@@ -12,6 +12,7 @@ using namespace chrono;
 int bRow = 16;
 int bCol = 8;
 int sizeOfValidBlock;
+int lengthOfValidBlock;
 vector<vector<string>> matrix(bRow, vector<string>(bCol, "_")); // Set default value to "_"
 
 //handle block models (in true/false models)
@@ -34,6 +35,7 @@ void initializeTetBlocks(int index){
                     tetModels[i][j] = true;
                     //set the size of the valid block
                     sizeOfValidBlock = 2;
+                    lengthOfValidBlock = 2;
                 }
             }
             break;
@@ -42,6 +44,7 @@ void initializeTetBlocks(int index){
                 for(int j = 0; j < 3; j++){
                     tetModels[i][j] = true;
                     sizeOfValidBlock = 2;
+                    lengthOfValidBlock = 3;
                 }
             }
             break;
@@ -91,22 +94,14 @@ void blockMovement() {
 
     while (true) {
         // Check if block reaches bottom or another block
-        for (int i = tetRow - 1; i >= 0; i--) {
-            for (int j = 0; j < tetCol; j++) {
-                if (tetModels[i][j]) {
-                    int newRow = blockRow + i + 1;  
-                    int newCol = blockCol + j;
-
-                    cout << i << " :: " << newRow << " + " << newCol << endl; //debug
-
-                    if (newRow >= bRow || (matrix[newRow][newCol] == "X" && !tetModels[i][j])) {
-                        cout << "db: " << newRow << endl; //debug
-                        isBlock = true;
-                    }
+        /*for(int i = 0; i < sizeOfValidBlock; i++){
+            for(int j = 0; j < lengthOfValidBlock; j++){
+                if(matrix[i + 1][j] == "X"){
+                    isBlock = true;
                 }
             }
-        }
-
+        }*/
+        
         if (isBlock) break;
 
         // Clear previous position
@@ -120,7 +115,7 @@ void blockMovement() {
 
         // Move block down
         blockRow++;
-
+        cout << blockRow;
         // Place block in new position
         for (int i = 0; i < tetRow; i++) {
             for (int j = 0; j < tetCol; j++) {
