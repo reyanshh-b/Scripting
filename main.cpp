@@ -94,13 +94,14 @@ void blockMovement() {
 
     while (true) {
         // Check if block reaches bottom or another block
-        /*for(int i = 0; i < sizeOfValidBlock; i++){
-            for(int j = 0; j < lengthOfValidBlock; j++){
-                if(matrix[i + 1][j] == "X"){
-                    isBlock = true;
+        for(int i = 0; i < lengthOfValidBlock - 1; i ++){
+            for(int j = 0; j < sizeOfValidBlock - 1; j++){
+                if(tetModels[i][j]){
+                    //run smt
                 }
+                cout << i << "  +  " << j;
             }
-        }*/
+        }
         
         if (isBlock) break;
 
