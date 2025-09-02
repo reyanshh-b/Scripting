@@ -14,10 +14,12 @@ int main(){
     if(getlogin() != nullptr){
         user = getlogin();
     } else {
+        cout << "Unable to retrieve username from system credientials.. \n";
         cout << "Enter username: ";
         getline(cin, user);
     }
 #else 
+    cout << "OS is not Linux or iOS, assuming Windows...\n";
     cout << "Enter username: ";
     getline(cin, user);
 #endif
