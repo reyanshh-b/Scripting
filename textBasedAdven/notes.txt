@@ -1,0 +1,81 @@
+struct Skill {
+    int id;
+    std::string name;
+    int damage;
+};
+Then declare:
+
+cpp
+Copy code
+vector<Skill> chosenSkills;
+And push back like:
+
+cpp
+Copy code
+chosenSkills.push_back({moveList, magic.name, magic.damage});
+Option 2: Use tuple
+If you want to avoid defining a struct, you can use std::tuple:
+
+cpp
+Copy code
+#include <tuple>
+vector<std::tuple<int, std::string, int>> chosenSkills;
+Push back like:
+
+cpp
+Copy code
+chosenSkills.push_back(std::make_tuple(moveList, magic.name, magic.damage));
+Access elements with std::get<index>(tuple):
+
+cpp
+Copy code
+cout << std::get<1>(chosenSkills[chosenMove - 1]) << endl; // name
+cout << std::get<2>(chosenSkills[chosenMove - 1]) << endl; // damage
+My recommendation: Use a struct — it's clearer and easier to work with.
+Example:
+Define above your loop:
+
+cpp
+Copy code
+struct Skill {
+    int id;
+    std::string name;
+    int damage;
+};
+Then inside your loop:
+
+cpp
+Copy code
+vector<Skill> chosenSkills;
+
+for(const auto& magic : playerMagics) {
+    if(magic.damageReduction > 0.0){
+        moveList++;
+        chosenSkills.push_back({moveList, magic.name, 0}); // damageReduction skill, damage = 0
+        cout << moveList << ". Damage reduction: " << magic.damageReduction << endl;
+    }
+    if(magic.damage > 0){
+        moveList++;
+        chosenSkills.push_back({moveList, magic.name, magic.damage});
+        cout << moveList << ". Damage: " << magic.damage << endl;
+    }
+    cout << " > Description: " << magic.description << endl;
+}
+
+for(const auto& weapon : playerWeapons) {
+    cout << weapon.name << endl;
+    for(const auto& ability : weapon.abilities) {
+        moveList++;
+        chosenSkills.push_back({moveList, ability.name, ability.damage});
+        cout << moveList << ". " << ability.name << " " << ability.damage << " damage : " << ability.description << endl;
+    }
+    cout << endl;
+}
+Then when the player chooses:
+
+cpp
+Copy code
+int chosenMove; // from input
+// ...
+cout << "Chosen move: " << chosenSkills[chosenMove - 1].name << endl;
+int damage = chosenSkills[chosenMove - 1].damage;

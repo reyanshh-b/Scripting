@@ -9,7 +9,34 @@
 #include <ctime>
 using namespace std;
 
+class MagicAbility {
+    public:
+        string name;
+        string description;
+        int damage;
+        double damageReduction; // For shield-type abilities
+        bool isEvolved;
+        bool canBeEvo;
 
+        MagicAbility(const string& n, const string& desc, int dmg = 0, double reduction = 0.0, bool evolved = false, bool evolvable = false)
+            : name(n), description(desc), damage(dmg), damageReduction(reduction), isEvolved(evolved), canBeEvo(evolvable) {}
+};
+
+struct Ability {
+    string name;
+    int damage;
+    string description;
+};
+
+class Weapon{
+    public:
+        string name;
+        string description;
+        int damage;
+        vector<Ability> abilities;
+        Weapon(const string& n, const string& desc, int dmg, const vector<Ability>& abils)
+            : name(n), description(desc), damage(dmg), abilities(abils) {}
+};
 
 bool isOnlyInt(const string& s) {
     if (s.empty()) return false;
@@ -37,7 +64,7 @@ void healthMonitor() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
-void useInventoryItems(vector<string>& plyrInventory, vector<string>& playerMagics, const string& red, const string& green, const string& yellow, const string& blue, const string& reset){
+void useInventoryItems(vector<string>& plyrInventory, vector<MagicAbility>& playerMagics, const string& red, const string& green, const string& yellow, const string& blue, const string& reset){
     cout << yellow << "Enter the item number to use: " << reset << endl;
     string itemNumStr;
     getline(cin, itemNumStr);
@@ -67,17 +94,25 @@ void useInventoryItems(vector<string>& plyrInventory, vector<string>& playerMagi
         }else if(plyrInventory[itemNum - 1] == "Mysterious Item"){
             cout << green << "You hold the item firmly in your hand, and as it melts in your palm, with your body aborbing its energy, " << blue << "New magic unlocked: Shield (reduces damage by 20%, only used during battles)" << reset << endl;
             plyrInventory.erase(plyrInventory.begin() + itemNum - 1);
-            playerMagics.push_back("Shield");
+            playerMagics.push_back(MagicAbility(
+                "Shield",
+                "Reduces damage by 20 percent during battles",
+                0,
+                0.2,
+                false,
+                true
+            ));
         }
     }
 }
 
 
-void preBattleSequence(vector<string>& plyrInventory, vector<string>& playerMagics, const string& red, const string& green, const string& yellow, const string& blue, const string& cyan, const string& reset){
+vector<string> preBattleSequence(vector<string>& plyrInventory, vector<MagicAbility>& playerMagics, const string& red, const string& green, const string& yellow, const string& blue, const string& cyan, const string& reset){
     cout << yellow << "Inventory:" << endl;
     if(plyrInventory.empty()){
         cout << red << "Your inventory is empty. Good Luck." << reset << endl;
         cout << yellow << endl;
+        return {};
     }else{
         for(size_t i = 0; i < plyrInventory.size(); ++i){
             cout << blue << i+1 << ". " << plyrInventory[i] << endl;
@@ -128,7 +163,7 @@ void preBattleSequence(vector<string>& plyrInventory, vector<string>& playerMagi
                         }
                     }
                     if(alreadyInBattle){
-                        cout << red << "You can only use one Sword of Destiny during battle" << reset << endl;
+                        cout << red << "You can only use one" << cyan << "Sword of Destiny" << red << "during battle" << reset << endl;
                         continue;
                     }
                     battleItems.push_back("Sword of Destiny");
@@ -138,33 +173,22 @@ void preBattleSequence(vector<string>& plyrInventory, vector<string>& playerMagi
                 }
             }
         }
-        while(true){ //for MAGICS
-            if(playerMagics.empty()){
-                cout << red << "You have no magics available." << reset << endl;
-                break;
-            }
-            cout << yellow << "Available Magics:" << endl;
-            for(size_t i = 0; i < playerMagics.size(); ++i){
-                cout << blue << i+1 << ". " << playerMagics[i] << endl
-            };
 
-            cout << red << "Enter magics to use during battle (say exit to stop selecting)" << reset << endl;
-            string useMagic;
-            getline(cin, useMagic);
-            if(useMagic == "exit"){
-                cout << cyan << "You decide not to use any more magics." << reset << endl;
-                break;
-            }else{
-                //convert to int and use magic
-                int magicNum = stoi(useMagic);
-                if(magicNum < 1 || magicNum > static_cast<int>(playerMagics.size())){
-                    cout << red << "Invalid magic number." << reset << endl;
-                }else{
-                    battleItems.push_back(playerMagics[magicNum - 1]);
-                    cout << cyan << playerMagics[magicNum - 1] << " will be used during battle" << reset << endl;
-                }
-            }
-        }
+        return battleItems;
+
+    }
+}
+
+
+
+//function to create dynamic text that somes out letter by letter
+void dynamicText(const string& text, int delayMs, const string& colorCode, bool nextLine) {
+    for(char c : text) {
+        cout << colorCode << c << flush; // Print each character with color
+        this_thread::sleep_for(chrono::milliseconds(delayMs)); // Delay between characters
+    }
+    if(nextLine){
+        cout << endl;
     }
 }
 
@@ -180,14 +204,15 @@ int main() {
     const string cyan = "\033[1;36m"; 
     const string white = "\033[1;37m"; 
     const string reset = "\033[0m";
+    const string darkRed = "\033[0;31m";
     //-----------Initizilize Game------------
     cout << red << "Hello Player, Provide a username to begin: " << reset << endl;
     string playerName;
     vector<string> plyrInventory;
     string lastRoom = "";
     string currentRoom = "";
-    vector<string> playerMagics;
-
+    vector<MagicAbility> playerMagics;
+    vector<Weapon> playerWeapons;
 
     getline(cin, playerName);
 
@@ -376,6 +401,7 @@ int main() {
         }
     }
     cout << magenta << "You walk down the hallway reluctantly and find two large wooden doors." << reset << endl;
+    vector<string> itemsInBattle;
     while(true){
         cout << yellow << "Do you want to go through the left door or the right door? (left/right): " << reset << endl;
         string doorChoice;
@@ -383,28 +409,106 @@ int main() {
         if(doorChoice == "left"){
             cout << red << "Door is locked! Maybe the key is in the other room?" << reset << endl;
         }else if (doorChoice == "right"){
-            cout << red << "An eerie vibe comes from the room, as you walk in, you see a silver blue chest infront of you, when you open it," << blue << "you find a sword emitting a powerful aura from it, you reach out to take it and feel a sensation flow through your arms." << reset << endl;
+            //cout << red << "An eerie vibe comes from the room, as you walk in, you see a silver blue chest infront of you, when you open it," << blue << " you find a sword emitting a powerful aura from it, you reach out to take it and feel a sensation flow through your arms." << reset << endl;
+            dynamicText("An eerie vibe comes from the room, as you walk in, you see a silver blue chest infront of you, when you open it,", 100, red, false);
+            dynamicText(" you find a sword emitting a powerful aura from it, you reach out to take it and feel a sensation flow through your arms.", 100, blue, true);
+            playerWeapons.push_back(Weapon(
+                "Sword of Destiny",
+                "Sword obtained in Lord Exodius's room",
+                25,
+                {
+                    {"Uppercut", 25, "A swift slice upwards, striking enemy from the chin up"},
+                    {"Heavy Slash", 15, "You grab the sword by its edge for maximum leverage and use all your might to swing as powerful as you can"},
+                }
+            ));
             plyrInventory.push_back("Sword of Destiny");
-            this_thread::sleep_for(chrono::milliseconds(4000));
-            cout << cyan << "Sword of Destiny added to inventory" << reset << endl;
-            this_thread::sleep_for(chrono::milliseconds(4000));
-            cout << red << "You continue walking down the room which gets darker and darker as you get futhur from the entrance, which has now disapeared, a deep voice fills the room" << reset << endl;
-            this_thread::sleep_for(chrono::milliseconds(4000));
-            cout << green << "[???]: I've been waiting for you... " << playerName << "." << reset << endl;
-            this_thread::sleep_for(chrono::milliseconds(4000));
-            cout << red << "The ground shakes at the boom of his voice" << endl;
-            this_thread::sleep_for(chrono::milliseconds(4000));
-            cout << blue << "[You]: Who... who are you?" << reset << endl;
-            this_thread::sleep_for(chrono::milliseconds(4000));
-            cout << green << "[???]: I am Lord Exodious, you enter my domain, now you'll never leave." << reset << endl;
-            this_thread::sleep_for(chrono::milliseconds(4000));
-            cout << red << "A giant figure materializes infront of you, towering over you, his eyes glow a bright red color, and his armor is black as night" << reset << endl;
-            this_thread::sleep_for(chrono::milliseconds(4000));
-            cout << green << "Lord Exodious: Now, prepare to meet your doom!" << reset << endl;
-            this_thread::sleep_for(chrono::milliseconds(4000));
+            dynamicText("Sword of Destiny added to inventory", 35, cyan, true);
+            dynamicText("You continue walking down the room which gets darker and darker as you get futhur from the entrance, which has now disapeared, a deep voice fills the room", 100, red, true);
+            dynamicText("[???]: I've been waiting for you... ", 200, green, false);
+            dynamicText(playerName, 200, red, true);
+            dynamicText("The ground shakes at the boom of his voice", 10, red, true);
+            dynamicText("[You]: Who... who are you?", 150, blue, true);
+            dynamicText(
+                "[???]: I am Lord Exodious, you enter my domain, now you'll never leave.",
+                90,
+                green,
+                true
+            );
+            dynamicText("A giant figure materializes infront of you, towering over you, his eyes glow a bright red color, and his armor is black as night", 100, red, true);
+            dynamicText("[Lord Exodius]: You entered my domain, now you'll never leave!", 175, darkRed, true);
 
             //intialize pre-battle sequence
-            preBattleSequence(plyrInventory, playerMagics, red, green, yellow, blue, cyan, reset);
+            itemsInBattle = preBattleSequence(plyrInventory, playerMagics, red, green, yellow, blue, cyan, reset);
+            cout << cyan << "Magics will automatically be equipped in battle" << endl;
+            cout << magenta << "Beginning battle..." << reset << endl;
+
+            break;
+        }
+    }
+
+    //boss battle
+
+    system("clear"); //clear terminal
+    int exodiusHealth = 200;
+     while(true){ //boss battle
+        cout << darkRed << "Lord Exodius Health: " << exodiusHealth << endl;
+        cout << blue << "Your health: " << playerHealth << endl;
+        cout << reset << "-----------------------------------" << endl;
+        cout << yellow << "Current items in use:" << endl;
+        cout << blue;  
+        for(size_t i = 0; i < itemsInBattle.size(); ++i){
+            cout << i+1 << ". " << itemsInBattle[i] << endl;
+        }
+        cout << reset << "-----------------------------------" << endl;
+        cout << cyan << "Magic Abilities: " << endl;
+        cout << endl;
+        string input;
+        int moveList = 0;
+        int chosenMove = 0;
+        vector<pair<int, string>> chosenSkills;
+        for(const auto& magic: playerMagics){
+            cout << magic.name << ":" << endl;
+            if(magic.damageReduction > 0.0){
+                moveList++;
+                cout << moveList << ". Damage reduction: " << magic.damageReduction << endl;
+                chosenSkills.push_back({moveList, magic.name});
+            }
+            if(magic.damage > 0){
+                moveList++;
+                cout << moveList << ". Damage: " << magic.damage << endl;
+                chosenSkills.push_back({moveList, magic.name});
+            }
+            cout << " > Description: " << magic.description << endl;
+        }
+
+        cout << blue << "------------WEAPONS--------------" << endl;
+
+        //list abilities for weapons
+        for(const auto& weapon : playerWeapons){
+            cout << cyan << weapon.name << endl;
+            for(const auto& ability : weapon.abilities){
+                moveList++;
+                cout << blue << moveList << ". " << ability.name << " " << ability.damage << " damage : " << ability.description << endl;
+                chosenSkills.push_back({moveList, ability.name});
+            }
+            cout << endl;
+        }
+
+        cout << green << "Enter a move you want to use: " << endl;
+
+        getline(cin, input);
+        try{
+            chosenMove = stoi(input);
+        }catch(const exception& e){
+            cout << "Invalid input, enter a valid number" << endl;
+            continue;
+        }
+        cout << darkRed << "Chosen move: " << chosenSkills[chosenMove - 1].second << endl;
+
+        break;
+
+        if(exodiusHealth <= 0){ //when exodius is dead
+            dynamicText("LORD EXODIUS DEFEATED", 60, green, true);
             break;
         }
     }
