@@ -9,71 +9,86 @@
 #include <vector>
 #include <ctime>
 using namespace std;
-struct BossAttack{
+struct BossAttack
+{
     string name;
     int damage;
     string description;
 };
-struct Boss{
+struct Boss
+{
     string name;
     int health;
     vector<BossAttack> attacks;
     vector<string> voicelines;
 };
-struct Ability {
+struct Ability
+{
     string name;
     int damage;
     string description;
     bool removeHealth;
 };
-struct MagicAbilitySkill{
+struct MagicAbilitySkill
+{
     string name;
     int damage;
     string description;
     int removeHP;
     float damageReduction;
+    bool isBinding;
 };
-struct Skill{
+struct Skill
+{
     string name;
     int damage;
     int id;
     double damageReduction;
     int healthRemove;
+    bool isBinding;
 };
 
-class MagicAbility {
-    public:
-        string name;
-        string description;
-        int damage;
-        double damageReduction; // For shield-type abilities
-        bool isEvolved;
-        bool canBeEvo;
-        vector<MagicAbilitySkill> abilities;
+class MagicAbility
+{
+public:
+    string name;
+    string description;
+    int damage;
+    double damageReduction; // For shield-type abilities
+    bool isEvolved;
+    bool canBeEvo;
+    vector<MagicAbilitySkill> abilities;
 
-        MagicAbility(const string& n, const string& desc, int dmg = 0, double reduction = 0.0, bool evolved = false, bool evolvable = false, const vector<MagicAbilitySkill>& abils = {})
-            : name(n), description(desc), damage(dmg), damageReduction(reduction), isEvolved(evolved), canBeEvo(evolvable), abilities(abils) {}
+    MagicAbility(const string &n, const string &desc, int dmg = 0, double reduction = 0.0, bool evolved = false, bool evolvable = false, const vector<MagicAbilitySkill> &abils = {})
+        : name(n), description(desc), damage(dmg), damageReduction(reduction), isEvolved(evolved), canBeEvo(evolvable), abilities(abils) {}
 };
 
-class Weapon{
-    public:
-        string name;
-        string description;
-        int damage;
-        vector<Ability> abilities;
-        Weapon(const string& n, const string& desc, int dmg, const vector<Ability>& abils)
-            : name(n), description(desc), damage(dmg), abilities(abils) {}
+class Weapon
+{
+public:
+    string name;
+    string description;
+    int damage;
+    vector<Ability> abilities;
+    Weapon(const string &n, const string &desc, int dmg, const vector<Ability> &abils)
+        : name(n), description(desc), damage(dmg), abilities(abils) {}
 };
 
-bool isOnlyInt(const string& s) {
-    if (s.empty()) return false;
+bool isOnlyInt(const string &s)
+{
+    if (s.empty())
+        return false;
     size_t start = 0;
-    if (s[0] == '+' || s[0] == '-') {
-        if (s.size() == 1) return false; // just '+' or '-'
+    if (s[0] == '+' || s[0] == '-')
+    {
+        if (s.size() == 1)
+            return false; // just '+' or '-'
         start = 1;
     }
-    for (size_t i = start; i < s.size(); ++i) {
-        if (!isdigit(s[i])) return false;
+    for (size_t i = start; i < s.size(); ++i)
+    {
+        if (!isdigit(s[i]))
+            return false;
     }
     return true; // all digits (with optional sign)
 }
@@ -81,9 +96,12 @@ bool isOnlyInt(const string& s) {
 std::atomic<int> playerHealth(100);
 std::atomic<bool> gameRunning(true);
 
-void healthMonitor() {
-    while (gameRunning) {
-        if (playerHealth <= 0) {
+void healthMonitor()
+{
+    while (gameRunning)
+    {
+        if (playerHealth <= 0)
+        {
             cout << "\n\033[1;31mGAME OVER!\033[0m" << endl;
             gameRunning = false;
             exit(0); // forcefully exit the program
@@ -91,34 +109,47 @@ void healthMonitor() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
-void useInventoryItems(vector<string>& plyrInventory, vector<MagicAbility>& playerMagics, const string& red, const string& green, const string& yellow, const string& blue, const string& reset){
+void useInventoryItems(vector<string> &plyrInventory, vector<MagicAbility> &playerMagics, const string &red, const string &green, const string &yellow, const string &blue, const string &reset)
+{
     cout << yellow << "Enter the item number to use: " << reset << endl;
     string itemNumStr;
     getline(cin, itemNumStr);
-    if(isOnlyInt(itemNumStr)){
+    if (isOnlyInt(itemNumStr))
+    {
         int itemNum = stoi(itemNumStr);
-        if(itemNum < 1 || itemNum > static_cast<int>(plyrInventory.size())){
+        if (itemNum < 1 || itemNum > static_cast<int>(plyrInventory.size()))
+        {
             cout << red << "Invalid item number." << reset << endl;
-        }else if(plyrInventory[itemNum - 1] == "Health Potion"){
+        }
+        else if (plyrInventory[itemNum - 1] == "Health Potion")
+        {
             playerHealth += 20;
-            if(playerHealth > 100) playerHealth = 100;
+            if (playerHealth > 100)
+                playerHealth = 100;
             cout << green << "You used a Health Potion. Health +20" << reset << endl;
             cout << red << "Health: " << playerHealth << reset << endl;
             plyrInventory.erase(plyrInventory.begin() + itemNum - 1);
-        }else if(plyrInventory[itemNum - 1] == "Weird Skull"){
+        }
+        else if (plyrInventory[itemNum - 1] == "Weird Skull")
+        {
             int randomSkullOutcome = rand() % 2;
-            if(randomSkullOutcome == 0){
+            if (randomSkullOutcome == 0)
+            {
                 cout << red << "You examine the skull, and at first nothing happens, but then a bright flash of light erupts from the skull, when you come back to your senses" << green << " , all wounds are healed" << reset << endl;
                 playerHealth = 100;
                 cout << red << "Health: " << playerHealth << reset << endl;
                 plyrInventory.erase(plyrInventory.begin() + itemNum - 1);
-            }else if(randomSkullOutcome == 1){
+            }
+            else if (randomSkullOutcome == 1)
+            {
                 cout << red << "You examine the skull, at first nothing happens but then the eyesockets glow a bright red color and a beam of light shines at you, " << red << "You lose half your health!" << reset << endl;
                 playerHealth = playerHealth / 2;
                 cout << red << "Health: " << playerHealth << reset << endl;
                 plyrInventory.erase(plyrInventory.begin() + itemNum - 1);
-            }   
-        }else if(plyrInventory[itemNum - 1] == "Mysterious Item"){
+            }
+        }
+        else if (plyrInventory[itemNum - 1] == "Mysterious Item")
+        {
             cout << green << "You hold the item firmly in your hand, and as it melts in your palm, with your body aborbing its energy, " << blue << "New magic unlocked: Shield (reduces damage by 20%, only used during battles)" << reset << endl;
             plyrInventory.erase(plyrInventory.begin() + itemNum - 1);
             playerMagics.push_back(MagicAbility(
@@ -128,120 +159,141 @@ void useInventoryItems(vector<string>& plyrInventory, vector<MagicAbility>& play
                 0.2,
                 false,
                 true,
-                {
-                    {"Shield", 0, "Reduces damage by 20 percent during battles", false}
-                }
-            ));
+                {{"Shield", 0, "Reduces damage by 20 percent during battles", false, false}}));
         }
     }
 }
 
-
-vector<string> preBattleSequence(vector<string>& plyrInventory, vector<MagicAbility>& playerMagics, const string& red, const string& green, const string& yellow, const string& blue, const string& cyan, const string& reset){
+vector<string> preBattleSequence(vector<string> &plyrInventory, vector<MagicAbility> &playerMagics, const string &red, const string &green, const string &yellow, const string &blue, const string &cyan, const string &reset)
+{
     cout << yellow << "Inventory:" << endl;
-    if(plyrInventory.empty()){
+    if (plyrInventory.empty())
+    {
         cout << red << "Your inventory is empty. Good Luck." << reset << endl;
         cout << yellow << endl;
         return {};
-    }else{
-        for(size_t i = 0; i < plyrInventory.size(); ++i){
-            cout << blue << i+1 << ". " << plyrInventory[i] << endl;
+    }
+    else
+    {
+        for (size_t i = 0; i < plyrInventory.size(); ++i)
+        {
+            cout << blue << i + 1 << ". " << plyrInventory[i] << endl;
         }
         vector<string> battleItems;
-        while(true){ //for ITEMS, next while loop is for MAGIC
+        while (true)
+        { // for ITEMS, next while loop is for MAGIC
             cout << red << "Enter items to use during battle (say exit to stop selecting)" << reset << endl;
             string useItem;
             getline(cin, useItem);
-            if(useItem == "exit"){
+            if (useItem == "exit")
+            {
                 cout << cyan << "You decide not to use any more items." << reset << endl;
                 break;
-            }else{
-                //convert to int and use item
+            }
+            else
+            {
+                // convert to int and use item
                 int itemNum = stoi(useItem);
-                if(itemNum < 1 || itemNum > static_cast<int>(plyrInventory.size())){
+                if (itemNum < 1 || itemNum > static_cast<int>(plyrInventory.size()))
+                {
                     cout << red << "Invalid item number." << reset << endl;
-                }else if(plyrInventory[itemNum - 1] == "Health Potion"){
-                    //check number of health potions in user inventory
+                }
+                else if (plyrInventory[itemNum - 1] == "Health Potion")
+                {
+                    // check number of health potions in user inventory
                     int potionCount = 0;
-                    for(const string& item : plyrInventory){
-                        if(item == "Health Potion"){
+                    for (const string &item : plyrInventory)
+                    {
+                        if (item == "Health Potion")
+                        {
                             potionCount++;
                         }
                     }
-                    //if user tried to put more potions than they have in battle items
+                    // if user tried to put more potions than they have in battle items
                     int battlePotionCount = 0;
-                    for(const string& item : battleItems){
-                        if(item == "Health Potion"){
+                    for (const string &item : battleItems)
+                    {
+                        if (item == "Health Potion")
+                        {
                             battlePotionCount++;
                         }
                     }
-                    if(battlePotionCount >= potionCount){
+                    if (battlePotionCount >= potionCount)
+                    {
                         cout << red << "You can only use " << potionCount << " Health Potion(s) during battle" << reset << endl;
                         continue;
                     }
                     battleItems.push_back("Health Potion");
                     cout << cyan << "Health Potion will be used during battle" << reset << endl;
-
-
-                }else if(plyrInventory[itemNum - 1] == "Sword of Destiny"){
-                    //check if already in battle items
+                }
+                else if (plyrInventory[itemNum - 1] == "Sword of Destiny")
+                {
+                    // check if already in battle items
                     bool alreadyInBattle = false;
-                    for(const string& item : battleItems){
-                        if(item == "Sword of Destiny"){
+                    for (const string &item : battleItems)
+                    {
+                        if (item == "Sword of Destiny")
+                        {
                             alreadyInBattle = true;
                             break;
                         }
                     }
-                    if(alreadyInBattle){
+                    if (alreadyInBattle)
+                    {
                         cout << red << "You can only use one" << cyan << "Sword of Destiny" << red << "during battle" << reset << endl;
                         continue;
                     }
                     battleItems.push_back("Sword of Destiny");
                     cout << cyan << "Sword of Destiny will be used during battle" << reset << endl;
-                }else{
+                }
+                else
+                {
                     cout << red << "Item cannot be used during battle" << reset << endl;
                 }
             }
         }
 
         return battleItems;
-
     }
 }
 
-
-
-//function to create dynamic text that somes out letter by letter
-void dynamicText(const string& text, int delayMs, const string& colorCode, bool nextLine) {
-    for(char c : text) {
-        cout << colorCode << c << flush; // Print each character with color
+// function to create dynamic text that somes out letter by letter
+void dynamicText(const string &text, int delayMs, const string &colorCode, bool nextLine)
+{
+    for (char c : text)
+    {
+        cout << colorCode << c << flush;                       // Print each character with color
         this_thread::sleep_for(chrono::milliseconds(delayMs)); // Delay between characters
     }
-    if(nextLine){
+    if (nextLine)
+    {
         cout << endl;
     }
 }
 
 void bossBattle(
-    Boss& boss,
-    vector<Weapon>& playerWeapons,
-    vector<MagicAbility>& playerMagics,
-    vector<string>& itemsInBattle,
-    vector<string>& plyrInventory,
+    Boss &boss,
+    vector<Weapon> &playerWeapons,
+    vector<MagicAbility> &playerMagics,
+    vector<string> &itemsInBattle,
+    vector<string> &plyrInventory,
     int playerHealth,
-    bool& hasPotion,
-    const string& red, const string& green, const string& yellow, const string& blue, const string& magenta, const string& cyan, const string& white, const string& reset, const string& darkRed //colors
-){
-    while(boss.health > 0 && playerHealth > 0){
-        //display health of exodius and player
+    bool &hasPotion,
+    const string &red, const string &green, const string &yellow, const string &blue, const string &magenta, const string &cyan, const string &white, const string &reset, const string &darkRed // colors
+)
+{
+    while (boss.health > 0 && playerHealth > 0)
+    {
+        // display health of exodius and player
         cout << red << "-----------------------------------" << endl;
         cout << darkRed << boss.name << " Health: " << boss.health << endl;
         cout << blue << "Your health: " << playerHealth << endl;
         cout << reset << "-----------------------------------" << endl;
         cout << yellow << "Current items in use:" << endl;
-        cout << blue;  
-        for(size_t i = 0; i < itemsInBattle.size(); ++i){
-            cout << i+1 << ". " << itemsInBattle[i] << endl;
+        cout << blue;
+        for (size_t i = 0; i < itemsInBattle.size(); ++i)
+        {
+            cout << i + 1 << ". " << itemsInBattle[i] << endl;
         }
         cout << reset << "-----------------------------------" << endl;
         cout << cyan << "Magic Abilities: " << endl;
@@ -249,41 +301,42 @@ void bossBattle(
         string input;
         int moveList = 0;
         int chosenMove = 0;
-        vector<Skill>chosenSkills;
-        for(const auto& magic: playerMagics){
+        vector<Skill> chosenSkills;
+        for (const auto &magic : playerMagics)
+        {
             cout << magic.name << ":" << endl;
-            if(magic.damageReduction > 0.0){
+            if (magic.damageReduction > 0.0)
+            {
                 moveList++;
                 cout << moveList << ". Damage reduction: " << magic.damageReduction << endl;
                 chosenSkills.push_back({magic.name, magic.damage, moveList, magic.damageReduction});
             }
-            if(magic.damage > 0){
+            if (magic.damage > 0)
+            {
                 moveList++;
                 cout << moveList << ". Damage: " << magic.damage << endl;
-                chosenSkills.push_back({
-                    magic.name,
-                    magic.damage,
-                    moveList,
-                    0.0
-                });
+                chosenSkills.push_back({magic.name,
+                                        magic.damage,
+                                        moveList,
+                                        0.0});
             }
             cout << " > Description: " << magic.description << endl;
         }
 
         cout << blue << "------------WEAPONS--------------" << endl;
 
-        //list abilities for weapons
-        for(const auto& weapon : playerWeapons){
+        // list abilities for weapons
+        for (const auto &weapon : playerWeapons)
+        {
             cout << cyan << weapon.name << endl;
-            for(const auto& ability : weapon.abilities){
+            for (const auto &ability : weapon.abilities)
+            {
                 moveList++;
                 cout << blue << moveList << ". " << ability.name << " " << ability.damage << " damage : " << ability.description << endl;
-                chosenSkills.push_back({
-                    ability.name,
-                    ability.damage,
-                    moveList,
-                    0.0
-                });
+                chosenSkills.push_back({ability.name,
+                                        ability.damage,
+                                        moveList,
+                                        0.0});
             }
             cout << endl;
         }
@@ -291,47 +344,61 @@ void bossBattle(
         cout << green << "Enter a move you want to use: " << endl;
 
         getline(cin, input);
-        try{
+        try
+        {
             chosenMove = stoi(input);
-        }catch(const exception& e){
+        }
+        catch (const exception &e)
+        {
             cout << "Invalid input, enter a valid number" << endl;
             continue;
         }
         cout << darkRed << "Chosen move: " << chosenSkills[chosenMove - 1].name << endl;
         int damage = chosenSkills[chosenMove - 1].damage;
         double damageReduction = 0.0;
-        if(chosenSkills[chosenMove - 1].damageReduction > 0.0){
+        if (chosenSkills[chosenMove - 1].damageReduction > 0.0)
+        {
             damageReduction = chosenSkills[chosenMove - 1].damageReduction;
         }
-        
+
         this_thread::sleep_for(chrono::milliseconds(250));
 
-        cout << darkRed << "You attempt to use " << chosenSkills[chosenMove - 1].name << " on" << boss.name << " ..." << reset << endl;
+        cout << darkRed << "You attempt to use " << chosenSkills[chosenMove - 1].name << " on " << boss.name << " ..." << reset << endl;
 
-        if(damage > 0 && damageReduction == 0.0){ //only damage
-            //50% chance attack works or fails
+        if (damage > 0 && damageReduction == 0.0)
+        { // only damage
+            // 50% chance attack works or fails
             int randChance = rand() % 10;
-            if(randChance != 0){
-                //rand crit hit 20% chance
+            if (randChance != 0)
+            {
+                // rand crit hit 20% chance
                 int critChance = rand() % 5;
-                if(critChance == 0){
+                if (critChance == 0)
+                {
                     string textOutput = "CRITICAL HIT! " + chosenSkills[chosenMove - 1].name + " hits " + boss.name + " for " + to_string(damage + (damage / 2)) + " damage!";
                     dynamicText(textOutput, 50, darkRed, true);
                     boss.health -= damage + (damage / 2);
-                }else{
+                }
+                else
+                {
                     string textOutput = chosenSkills[chosenMove - 1].name + " hits " + boss.name + " for " + to_string(damage) + " damage!";
                     dynamicText(textOutput, 50, darkRed, true);
                     boss.health -= damage;
                 }
-            }else{
+            }
+            else
+            {
                 string textOutput = chosenSkills[chosenMove - 1].name + " missed! 0 damage dealt!";
                 dynamicText(textOutput, 50, red, true);
             }
-        }else if(damageReduction > 0.0 && damage == 0){ //only damage reduction
+        }
+        else if (damageReduction > 0.0 && damage == 0)
+        { // only damage reduction
             dynamicText("You brace yourself...", 50, cyan, true);
         }
 
-        if(boss.health <= 0){
+        if (boss.health <= 0)
+        {
             dynamicText(boss.name + " DEFEATED", 60, green, true);
             break;
         }
@@ -339,36 +406,44 @@ void bossBattle(
         int voiceLineIndex = rand() % boss.voicelines.size();
         dynamicText(boss.voicelines[voiceLineIndex], 75, darkRed, true);
 
-        
         int attackIndex = rand() % boss.attacks.size();
-        const BossAttack& attack = boss.attacks[attackIndex];
+        const BossAttack &attack = boss.attacks[attackIndex];
         dynamicText(boss.name + " uses " + attack.name + " " + attack.description, 50, darkRed, true);
         int damageTaken = attack.damage - static_cast<int>(attack.damage * damageReduction);
         playerHealth -= damageTaken;
         cout << red << "You lose " << damageTaken << " health!" << reset << endl;
 
-        //act player if they want to use potion
+        // act player if they want to use potion
         string usePotion;
-        if(hasPotion){
-            //search for potion in battle items
-            for(const string& item : itemsInBattle){
-                if(item == "Health Potion"){
+        if (hasPotion)
+        {
+            // search for potion in battle items
+            for (const string &item : itemsInBattle)
+            {
+                if (item == "Health Potion")
+                {
                     cout << yellow << "Do you want to use a Health Potion? (yes/no): " << reset << endl;
                     getline(cin, usePotion);
-                    for(char& c : usePotion) c = tolower(c); //convert to lowercase
+                    for (char &c : usePotion)
+                        c = tolower(c); // convert to lowercase
                     break;
                 }
             }
-            if(usePotion == "yes"){
+            if (usePotion == "yes")
+            {
                 playerHealth += 20;
-                if(playerHealth > 100) playerHealth = 100;
+                if (playerHealth > 100)
+                    playerHealth = 100;
                 cout << green << "Potion used! Health +20" << reset << endl;
-                //remove one potion from battle items and inventory
-                for(auto it = itemsInBattle.begin(); it != itemsInBattle.end(); ++it){
-                    if(*it == "Health Potion"){
+                // remove one potion from battle items and inventory
+                for (auto it = itemsInBattle.begin(); it != itemsInBattle.end(); ++it)
+                {
+                    if (*it == "Health Potion")
+                    {
                         itemsInBattle.erase(it);
                         auto invIt = find(plyrInventory.begin(), plyrInventory.end(), "Health Potion");
-                        if(invIt != plyrInventory.end()){
+                        if (invIt != plyrInventory.end())
+                        {
                             plyrInventory.erase(invIt);
                         }
                         break;
@@ -379,17 +454,18 @@ void bossBattle(
     }
 }
 
-int main() {
+int main()
+{
     srand(time(0));
     system("clear");
-    //----------color ASCII---------- 
-    const string red = "\033[1;31m"; 
-    const string green = "\033[1;32m"; 
-    const string yellow = "\033[1;33m"; 
-    const string blue = "\033[1;34m"; 
-    const string magenta = "\033[1;35m"; 
-    const string cyan = "\033[1;36m"; 
-    const string white = "\033[1;37m"; 
+    //----------color ASCII----------
+    const string red = "\033[1;31m";
+    const string green = "\033[1;32m";
+    const string yellow = "\033[1;33m";
+    const string blue = "\033[1;34m";
+    const string magenta = "\033[1;35m";
+    const string cyan = "\033[1;36m";
+    const string white = "\033[1;37m";
     const string reset = "\033[0m";
     const string darkRed = "\033[0;31m";
     //-----------Initizilize Game------------
@@ -405,13 +481,18 @@ int main() {
 
     getline(cin, playerName);
 
-    if (isOnlyInt(playerName)) {
+    if (isOnlyInt(playerName))
+    {
         cout << red << "Invalid name (cannot be only numbers or epty), defaulting to Player1" << reset << endl;
         playerName = "Player1";
-    }else if(playerName.empty() || playerName == " ") {
+    }
+    else if (playerName.empty() || playerName == " ")
+    {
         cout << red << "Invalid name (cannot be only numbers or epty), defaulting to Player1" << reset << endl;
         playerName = "Player1";
-    }else{
+    }
+    else
+    {
         system("clear");
         cout << green << "Welcome, " << playerName << "!" << reset << endl;
     }
@@ -429,133 +510,183 @@ int main() {
         "You enter the skull room but step over a tripmine, a dart shoots out and hits you in the leg! You lose 20 health.",
         "You enter the skull room and find a weird skull on a pedestal",
         "You enter the skull room and your vision gets blurry, you feel dizzy and fall to the ground, losing 10 health, you wake up 15 minutes later",
-        "You enter the skull room and find a chest, you open it and find a health potion"
-    };
+        "You enter the skull room and find a chest, you open it and find a health potion"};
     vector<string> possibleOutcomesHeart = {
         "You enter a room thats filled with heart decals on the wall, a faint perfume fills the air, you feel relaxed but then pass out, it turns out the perfume was laced with a sedative and you lose 15 health",
         "You enter the room and find a living room setup with a mysterious drink on the table",
         "You enter the room and a pink figure appears, it attacks you in a blink of an eye, you lose 25 health",
-        "You enter a pink room -- Nothing happens"
-    };
+        "You enter a pink room -- Nothing happens"};
     vector<string> possibleOutcomesStar = {
         "You enter a room filled with stars on the wall, you feel a sense of calm wash over you, you gain 10 health",
         "You enter the room and find a telescope pointed at a window, you look through it and see a beautiful starry sky, you look at it long enough and a mysterious item appears in your inventory",
         "You enter the room and find a chest, you open it and find a health potion",
-        "You enter the room and is blinded by a flash of light, you lose 5 health"
-    };
+        "You enter the room and is blinded by a flash of light, you lose 5 health"};
 
-    if(plrChoice == "1"){
+    if (plrChoice == "1")
+    {
         lastRoom = "Skull Room";
         cout << green << "Entering the " << red << "Skull Room" << reset << endl;
         int outcomeIndex = rand() % possibleOutcomesSkull.size();
         cout << magenta << possibleOutcomesSkull[outcomeIndex] << reset << endl;
-        if(outcomeIndex == 0){
+        if (outcomeIndex == 0)
+        {
             playerHealth -= 20;
             cout << red << "Health: " << playerHealth << reset << endl;
-        }else if(outcomeIndex == 1){
+        }
+        else if (outcomeIndex == 1)
+        {
             cout << yellow << "Do you want to take the skull? (yes/no): " << reset << endl;
             string takeSkull;
             getline(cin, takeSkull);
-            for(char& c : takeSkull) c = tolower(c);
-            if(takeSkull == "yes"){
+            for (char &c : takeSkull)
+                c = tolower(c);
+            if (takeSkull == "yes")
+            {
                 plyrInventory.push_back("Weird Skull");
                 cout << cyan << "Skull added to inventory" << reset << endl;
-            }else if (takeSkull == "no"){
+            }
+            else if (takeSkull == "no")
+            {
                 cout << cyan << "You leave the skull alone" << reset << endl;
-            }else{
+            }
+            else
+            {
                 cout << red << "Invalid input, leaving skull alone" << reset << endl;
             }
-        }else if (outcomeIndex == 2){
+        }
+        else if (outcomeIndex == 2)
+        {
             playerHealth -= 10;
             cout << red << "Health: " << playerHealth << reset << endl;
-        }else if (outcomeIndex == 3){
+        }
+        else if (outcomeIndex == 3)
+        {
             cout << yellow << "Do you want to keep the potion? (yes/no): " << reset << endl;
             string takePotion;
             getline(cin, takePotion);
-            for(char& c : takePotion) c = tolower(c);
-            if(takePotion == "yes"){
+            for (char &c : takePotion)
+                c = tolower(c);
+            if (takePotion == "yes")
+            {
                 plyrInventory.push_back("Health Potion");
                 hasPotion = true;
                 potions.push_back("Health Potion");
                 cout << cyan << "Health Potion added to inventory" << reset << endl;
-            }else if (takePotion == "no"){
+            }
+            else if (takePotion == "no")
+            {
                 cout << cyan << "You leave the potion" << reset << endl;
-            }else{
+            }
+            else
+            {
                 cout << red << "Invalid input, leaving potion" << reset << endl;
             }
         }
-    }else if (plrChoice == "2"){
+    }
+    else if (plrChoice == "2")
+    {
         lastRoom = "Heart Room";
         cout << green << "Entering the " << red << "Heart Room" << reset << endl;
         int outcomeIndex = rand() % possibleOutcomesHeart.size();
         cout << magenta << possibleOutcomesHeart[outcomeIndex] << reset << endl;
-        if(outcomeIndex == 0){
+        if (outcomeIndex == 0)
+        {
             playerHealth -= 15;
             cout << red << "Health: " << playerHealth << reset << endl;
-        }else if(outcomeIndex == 1){
+        }
+        else if (outcomeIndex == 1)
+        {
             cout << red << "Do you want to drink it? (yes/no): " << reset << endl;
             string drink;
             getline(cin, drink);
-            for(char& c : drink) c = tolower(c);
-            if(drink == "yes"){
+            for (char &c : drink)
+                c = tolower(c);
+            if (drink == "yes")
+            {
                 int drinkOutcome = rand() % 2;
-                if(drinkOutcome == 0){
+                if (drinkOutcome == 0)
+                {
                     playerHealth += 20;
                     cout << green << "You feel rejuvenated! Health +20" << reset << endl;
-                    if(playerHealth > 100) playerHealth = 100;
+                    if (playerHealth > 100)
+                        playerHealth = 100;
                     cout << red << "Health: " << playerHealth << reset << endl;
-                }else{
+                }
+                else
+                {
                     playerHealth -= 20;
                     cout << red << "The drink was poisoned! Health -20" << reset << endl;
                     cout << red << "Health: " << playerHealth << reset << endl;
                 }
-            }else if (drink == "no"){
+            }
+            else if (drink == "no")
+            {
                 cout << cyan << "You leave the drink alone" << reset << endl;
             }
-        }else if (outcomeIndex == 2){
+        }
+        else if (outcomeIndex == 2)
+        {
             playerHealth -= 25;
             cout << red << "Health: " << playerHealth << reset << endl;
         }
-    }else if (plrChoice == "3"){
+    }
+    else if (plrChoice == "3")
+    {
         lastRoom = "Star Room";
         cout << green << "Entering the " << yellow << "Star room" << reset << endl;
         int outcomeIndex = rand() % possibleOutcomesStar.size();
         cout << magenta << possibleOutcomesStar[outcomeIndex] << reset << endl;
-        if(outcomeIndex == 0){
+        if (outcomeIndex == 0)
+        {
             playerHealth += 10;
-            if(playerHealth > 100) playerHealth = 100;
+            if (playerHealth > 100)
+                playerHealth = 100;
             cout << red << "Health: " << playerHealth << reset << endl;
-        }else if (outcomeIndex == 1){
+        }
+        else if (outcomeIndex == 1)
+        {
             plyrInventory.push_back("Mysterious Item");
             cout << cyan << "Mysterious Item added to inventory" << reset << endl;
-        }else if(outcomeIndex == 2){
+        }
+        else if (outcomeIndex == 2)
+        {
             cout << yellow << "Do you want to keep the potion? (yes/no): " << reset << endl;
             string takePotion;
             getline(cin, takePotion);
-            for(char& c : takePotion) c = tolower(c);
-            if(takePotion == "yes"){
+            for (char &c : takePotion)
+                c = tolower(c);
+            if (takePotion == "yes")
+            {
                 plyrInventory.push_back("Health Potion");
                 hasPotion = true;
                 potions.push_back("Health Potion");
                 cout << cyan << "Health Potion added to inventory" << reset << endl;
-            }else if (takePotion == "no"){
+            }
+            else if (takePotion == "no")
+            {
                 cout << cyan << "You leave the potion" << reset << endl;
-            }else{
+            }
+            else
+            {
                 cout << red << "Invalid input, leaving potion" << reset << endl;
             }
-        }else if (outcomeIndex == 3){
+        }
+        else if (outcomeIndex == 3)
+        {
             playerHealth -= 5;
             cout << red << "Health: " << playerHealth << reset << endl;
         }
-    }else{
+    }
+    else
+    {
         cout << red << "Invalid choice, you stumble and fall into the void, losing all your health!" << reset << endl;
         playerHealth = 0;
     }
 
-    
     cout << yellow << "You leave the room and find yourself in a long hallway with two paths:" << endl;
     currentRoom = "Hallway";
-    while(true){
+    while (true)
+    {
         cout << yellow << endl;
         cout << "What do you do?" << endl;
         cout << "1. Check/Use inventory items" << endl;
@@ -563,58 +694,71 @@ int main() {
         cout << "3. Continue down the hallway" << reset << endl;
         string hallwayChoice;
         getline(cin, hallwayChoice);
-        if(hallwayChoice == "1"){
+        if (hallwayChoice == "1")
+        {
             cout << endl;
             cout << yellow << "Inventory:" << endl;
-            if(plyrInventory.empty()){
+            if (plyrInventory.empty())
+            {
                 cout << red << "Your inventory is empty." << reset << endl;
                 cout << yellow << endl;
-            }else{
-                for(size_t i = 0; i < plyrInventory.size(); ++i){
-                    cout << blue << i+1 << ". " << plyrInventory[i] << endl;
+            }
+            else
+            {
+                for (size_t i = 0; i < plyrInventory.size(); ++i)
+                {
+                    cout << blue << i + 1 << ". " << plyrInventory[i] << endl;
                 }
                 cout << red << "Do you want to use an item? (yes/no): " << reset << endl;
                 string useItem;
                 getline(cin, useItem);
-                if(useItem == "no"){
+                if (useItem == "no")
+                {
                     cout << cyan << "You decide not to use any items." << reset << endl;
-                }else if(useItem == "yes"){
+                }
+                else if (useItem == "yes")
+                {
                     useInventoryItems(plyrInventory, playerMagics, red, green, yellow, blue, reset);
                 }
             }
-        }else if(hallwayChoice == "2"){
+        }
+        else if (hallwayChoice == "2")
+        {
             cout << endl;
             cout << green << "Health: " << playerHealth << endl;
             cout << blue << "Inventory items: " << plyrInventory.size() << endl;
-            cout << cyan <<"Current Room: " << currentRoom << yellow << endl;
+            cout << cyan << "Current Room: " << currentRoom << yellow << endl;
             cout << endl;
-        }else if (hallwayChoice == "3"){
+        }
+        else if (hallwayChoice == "3")
+        {
             bool hasKey = false;
             break;
         }
     }
     cout << magenta << "You walk down the hallway reluctantly and find two large wooden doors." << reset << endl;
     vector<string> itemsInBattle;
-    while(true){
+    while (true)
+    {
         cout << yellow << "Do you want to go through the left door or the right door? (left/right): " << reset << endl;
         string doorChoice;
         getline(cin, doorChoice);
-        if(doorChoice == "left"){
+        if (doorChoice == "left")
+        {
             cout << red << "Door is locked! Maybe the key is in the other room?" << reset << endl;
-        }else if (doorChoice == "right"){
-            //cout << red << "An eerie vibe comes from the room, as you walk in, you see a silver blue chest infront of you, when you open it," << blue << " you find a sword emitting a powerful aura from it, you reach out to take it and feel a sensation flow through your arms." << reset << endl;
+        }
+        else if (doorChoice == "right")
+        {
+            // cout << red << "An eerie vibe comes from the room, as you walk in, you see a silver blue chest infront of you, when you open it," << blue << " you find a sword emitting a powerful aura from it, you reach out to take it and feel a sensation flow through your arms." << reset << endl;
             dynamicText("An eerie vibe comes from the room, as you walk in, you see a silver blue chest infront of you, when you open it,", 100, red, false);
             dynamicText(" you find a sword emitting a powerful aura from it, you reach out to take it and feel a sensation flow through your arms.", 100, blue, true);
             playerWeapons.push_back(Weapon(
                 "Sword of Destiny",
                 "Sword obtained in Lord Exodius's room",
                 25,
-                {
-                    {"Uppercut", 50, "A swift slice upwards, striking enemy from the chin up", false},
-                    {"Heavy Slash", 75, "You grab the sword by its edge for maximum leverage and use all your might to swing as powerful as you can", false},
-                    {"Normal Slash", 25, "A quick slash", false}
-                }
-            ));
+                {{"Uppercut", 50, "A swift slice upwards, striking enemy from the chin up", false},
+                 {"Heavy Slash", 75, "You grab the sword by its edge for maximum leverage and use all your might to swing as powerful as you can", false},
+                 {"Normal Slash", 25, "A quick slash", false}}));
             plyrInventory.push_back("Sword of Destiny");
             dynamicText("Sword of Destiny added to inventory", 35, cyan, true);
             dynamicText("You continue walking down the room which gets darker and darker as you get futhur from the entrance, which has now disapeared, a deep voice fills the room", 100, red, true);
@@ -626,12 +770,11 @@ int main() {
                 "[???]: I am Lord Exodious, you enter my domain, now you'll never leave.",
                 90,
                 green,
-                true
-            );
+                true);
             dynamicText("A giant figure materializes infront of you, towering over you, his eyes glow a bright red color, and his armor is black as night", 100, red, true);
             dynamicText("[Lord Exodius]: Prepare to beg for mercy!", 175, darkRed, true);
 
-            //intialize pre-battle sequence
+            // intialize pre-battle sequence
             itemsInBattle = preBattleSequence(plyrInventory, playerMagics, red, green, yellow, blue, cyan, reset);
             cout << cyan << "Magics will automatically be equipped in battle" << endl;
             cout << magenta << "Beginning battle..." << reset << endl;
@@ -640,36 +783,36 @@ int main() {
         }
     }
 
-    //boss battle
+    // boss battle
 
-    system("clear"); //clear terminal
-    int exodiusHealth = 200;
-     while(true){ //boss battle
-        Boss exodius = {
-            "Lord Exodius",
-            200,
-            {
-                {"Midnight Blade", 30, "dealing 30 damage!"},
-                {"Shadow Slash", 20, "dealing 20 damage!"},
-                {"Dark Pulse", 25, "dealing 25 damage!"}
-            },
-            {
-                "[Lord Exodius]: I see how it is...",
-                "[Lord Exodius]: Is that all you've got?",
-                "[Lord Exodius]: Hah. Weak.",
-                "[Lord Exodius]: You'll have to do better than that!",
-                "[Lord Exodius]: Pathetic.",
-                "[Lord Exodius]: I am.. inevitable.",
-            }
-        };
+    system("clear"); // clear terminal
+    Boss exodius = {
+        "Lord Exodius",
+        200,
+        {{"Midnight Blade", 30, "dealing 30 damage!"},
+         {"Shadow Slash", 20, "dealing 20 damage!"},
+         {"Dark Pulse", 25, "dealing 25 damage!"}},
+        {
+            "[Lord Exodius]: I see how it is...",
+            "[Lord Exodius]: Is that all you've got?",
+            "[Lord Exodius]: Hah. Weak.",
+            "[Lord Exodius]: You'll have to do better than that!",
+            "[Lord Exodius]: Pathetic.",
+            "[Lord Exodius]: I am.. inevitable.",
+        }};
 
-        bossBattle(exodius, playerWeapons, playerMagics, itemsInBattle, plyrInventory, playerHealth.load(), hasPotion, red, green, yellow, blue, magenta, cyan, white, reset, darkRed);
-    }
+    bossBattle(exodius, playerWeapons, playerMagics, itemsInBattle, plyrInventory, playerHealth.load(), hasPotion, red, green, yellow, blue, magenta, cyan, white, reset, darkRed);
 
-    //wow that alot of code for a boss battle
-    dynamicText("His remains disintegrate into a pile of dust, leaving behind a glowing sword with a green gem in its hilt and a dark orb carrying his magic essence", 75, green, true);
-    dynamicText("You pick up the sword, feeling its warmth and power coursing through your veins", 75, green, true);
-    dynamicText("After, you pick up the orb, feeling his power flow through your viens", 75, green, true);
+    //clear itemsInBattle
+    itemsInBattle.clear();
+
+    // wow that alot of code for a boss battle
+    dynamicText("As Exodius falls to the ground, hand cletching againts his chest, he looks up at you with final words", 65, red, true);
+    dynamicText("[Lord Exodius]; Heh... here I thought I was immortal... I thought I was.. a god...", 75, darkRed, true);
+    dynamicText("With that, he takes his last breath and falls silent", 75, red, true);
+    dynamicText("His remains disintegrate into a pile of dust, leaving behind a glowing sword with a green gem in its hilt and a dark orb carrying his magic essence", 75, yellow, true);
+    dynamicText("You pick up the sword, feeling its warmth and power coursing through your veins", 75, magenta, true);
+
     playerWeapons.push_back(Weapon(
         "Sword of Exodius",
         "Sword obtained from the remains of Lord Exodius, radiating his power when wielded",
@@ -680,6 +823,11 @@ int main() {
             {"Dark Wave", 100, "Unleash a wave of dark energy that damages all enemies, takes away 20 hp to use", true}
         }
     ));
+
+    dynamicText("Sword of Exodius added to inventory", 25, cyan, true);
+
+    dynamicText("After, you pick up the orb, feeling his power flow through your soul", 75, green, true);
+
     playerMagics.push_back(MagicAbility(
         "Exodius's Shadow",
         "Magic obtained from the essence of Lord Exodius, grants powerful dark abilities",
@@ -690,12 +838,55 @@ int main() {
         {
             {"Cloak", 0, "50/50 chance to dodge next attack", 0, 1.0},
             {"Dark Strike", 70, "Materialize a spear in the palm of your hand and throw it at the enemy", 0, 0.0},
+            {"Shadow Bind", 0, "Bind the enemy in shadows, preventing them from attacking next turn", 0, 1.0, true}
         }
     ));
 
+    dynamicText("New Magic unlocked: Exodius's Shadow", 25, blue, true);
 
-    
-    gameRunning = false;      // Tell the monitor thread to stop
-    monitorThread.join();     // Wait for it to finish
+    dynamicText("A chest appears infront of you while you begin to leave, inside of it appears a key... maybe it unlocks the other door?", 75, yellow, true);
+    plyrInventory.push_back("Old Key");
+    dynamicText("Old Key added to inventory", 25, yellow, true);
+    dynamicText("You walk back into the hallway, you face against the locked wooden door and slide the key inside the keyhole, it struggles at first but then unlocks with a loud click", 75, yellow, true);
+    //remove key from inv
+    auto keyIt = find(plyrInventory.begin(), plyrInventory.end(), "Old Key");
+    if (keyIt != plyrInventory.end())
+    {
+        plyrInventory.erase(keyIt);
+    }
+
+    dynamicText("You open the door reluctantly, and a bright light flashes your eyes, when you come to your senses, you appear in a large room with another locked door infront of you.. but a sense of", 75, yellow, false);
+    dynamicText("impending doom flows over your shoulders", 75, darkRed, true);
+
+    //wave of enemies
+    dynamicText("Suddenly, mutiple creatures appear infront of you, faces full of revenge", 50, red, true);
+    dynamicText("[Mysterious Creature]: HOW DARE YOU DEFEAT OUR LORD! MEET YOUR DOOM!", 100, darkRed, true);
+
+    while(true){
+        int numEnemies = 5;
+        vector<Skill> chosenSkills;
+        cout << cyan << "------------MAGICS--------------" << endl;
+        for (const auto& magic : playerMagics) {
+            cout << magic.name << ":" << endl;
+            if (magic.damageReduction > 0.0) {
+                cout << "Damage reduction: " << magic.damageReduction << endl;
+                chosenSkills.push_back({magic.name, magic.damage, 0, magic.damageReduction});
+            }
+            if(magic.isBinding){
+                cout << "Binding Magic: " << magic.name << endl;
+                chosenSkills.push_back({magic.name, magic.damage, 0, 0.0, true});
+            }
+            if(magic.damage > 0) {
+                cout << "Damage: " << magic.damage << endl;
+                chosenSkills.push_back({magic.name, magic.damage, 0, 0.0});
+            }
+            cout << " > Description: " << magic.description << endl;
+        }
+
+    }
+
+
+    gameRunning = false;  // Tell the monitor thread to stop
+    monitorThread.join(); // Wait for it to finish
     return 0;
 }
