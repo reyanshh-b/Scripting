@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <algorithm>
 #include <cstdlib>
 #include <thread>
 #include <atomic>
@@ -8,6 +9,37 @@
 #include <vector>
 #include <ctime>
 using namespace std;
+struct BossAttack{
+    string name;
+    int damage;
+    string description;
+}
+struct Boss{
+    string name;
+    int health;
+    vector<BossAttack> attacks;
+    vector<string> voicelines;
+}
+struct Ability {
+    string name;
+    int damage;
+    string description;
+    bool removeHealth;
+};
+struct MagicAbilitySkill{
+    string name;
+    int damage;
+    string description;
+    int removeHP;
+    float damageReduction;
+};
+struct Skill{
+    string name;
+    int damage;
+    int id;
+    double damageReduction;
+    int healthRemove;
+};
 
 class MagicAbility {
     public:
@@ -17,15 +49,10 @@ class MagicAbility {
         double damageReduction; // For shield-type abilities
         bool isEvolved;
         bool canBeEvo;
+        vector<MagicAbilitySkill> abilities;
 
-        MagicAbility(const string& n, const string& desc, int dmg = 0, double reduction = 0.0, bool evolved = false, bool evolvable = false)
-            : name(n), description(desc), damage(dmg), damageReduction(reduction), isEvolved(evolved), canBeEvo(evolvable) {}
-};
-
-struct Ability {
-    string name;
-    int damage;
-    string description;
+        MagicAbility(const string& n, const string& desc, int dmg = 0, double reduction = 0.0, bool evolved = false, bool evolvable = false, const vector<MagicAbilitySkill>& abils = {})
+            : name(n), description(desc), damage(dmg), damageReduction(reduction), isEvolved(evolved), canBeEvo(evolvable), abilities(abils) {}
 };
 
 class Weapon{
@@ -100,7 +127,10 @@ void useInventoryItems(vector<string>& plyrInventory, vector<MagicAbility>& play
                 0,
                 0.2,
                 false,
-                true
+                true,
+                {
+                    {"Shield", 0, "Reduces damage by 20 percent during battles", false}
+                }
             ));
         }
     }
@@ -192,6 +222,20 @@ void dynamicText(const string& text, int delayMs, const string& colorCode, bool 
     }
 }
 
+void bossBattle{(
+    Boss& boss,
+    vector<Weapon>& playerWeapons,
+    vector<MagicAbility>& playerMagics,
+    vector<string>& itemsInBattle,
+    vector<string>& plyrInventory,
+    int& playerHealth,
+    bool& hasPotion,
+    const string& red, const string& green, const string& yellow, const string& blue, const string& magenta, const string& cyan, const string& white, const string& reset, const string& darkRed //colors
+){
+
+}
+}
+
 int main() {
     srand(time(0));
     system("clear");
@@ -213,6 +257,8 @@ int main() {
     string currentRoom = "";
     vector<MagicAbility> playerMagics;
     vector<Weapon> playerWeapons;
+    vector<string> potions;
+    bool hasPotion = false;
 
     getline(cin, playerName);
 
@@ -286,6 +332,8 @@ int main() {
             for(char& c : takePotion) c = tolower(c);
             if(takePotion == "yes"){
                 plyrInventory.push_back("Health Potion");
+                hasPotion = true;
+                potions.push_back("Health Potion");
                 cout << cyan << "Health Potion added to inventory" << reset << endl;
             }else if (takePotion == "no"){
                 cout << cyan << "You leave the potion" << reset << endl;
@@ -344,6 +392,8 @@ int main() {
             for(char& c : takePotion) c = tolower(c);
             if(takePotion == "yes"){
                 plyrInventory.push_back("Health Potion");
+                hasPotion = true;
+                potions.push_back("Health Potion");
                 cout << cyan << "Health Potion added to inventory" << reset << endl;
             }else if (takePotion == "no"){
                 cout << cyan << "You leave the potion" << reset << endl;
@@ -417,8 +467,9 @@ int main() {
                 "Sword obtained in Lord Exodius's room",
                 25,
                 {
-                    {"Uppercut", 25, "A swift slice upwards, striking enemy from the chin up"},
-                    {"Heavy Slash", 15, "You grab the sword by its edge for maximum leverage and use all your might to swing as powerful as you can"},
+                    {"Uppercut", 50, "A swift slice upwards, striking enemy from the chin up", false},
+                    {"Heavy Slash", 75, "You grab the sword by its edge for maximum leverage and use all your might to swing as powerful as you can", false},
+                    {"Normal Slash", 25, "A quick slash", false}
                 }
             ));
             plyrInventory.push_back("Sword of Destiny");
@@ -435,7 +486,7 @@ int main() {
                 true
             );
             dynamicText("A giant figure materializes infront of you, towering over you, his eyes glow a bright red color, and his armor is black as night", 100, red, true);
-            dynamicText("[Lord Exodius]: You entered my domain, now you'll never leave!", 175, darkRed, true);
+            dynamicText("[Lord Exodius]: Prepare to beg for mercy!", 175, darkRed, true);
 
             //intialize pre-battle sequence
             itemsInBattle = preBattleSequence(plyrInventory, playerMagics, red, green, yellow, blue, cyan, reset);
@@ -451,67 +502,37 @@ int main() {
     system("clear"); //clear terminal
     int exodiusHealth = 200;
      while(true){ //boss battle
-        cout << darkRed << "Lord Exodius Health: " << exodiusHealth << endl;
-        cout << blue << "Your health: " << playerHealth << endl;
-        cout << reset << "-----------------------------------" << endl;
-        cout << yellow << "Current items in use:" << endl;
-        cout << blue;  
-        for(size_t i = 0; i < itemsInBattle.size(); ++i){
-            cout << i+1 << ". " << itemsInBattle[i] << endl;
-        }
-        cout << reset << "-----------------------------------" << endl;
-        cout << cyan << "Magic Abilities: " << endl;
-        cout << endl;
-        string input;
-        int moveList = 0;
-        int chosenMove = 0;
-        vector<pair<int, string>> chosenSkills;
-        for(const auto& magic: playerMagics){
-            cout << magic.name << ":" << endl;
-            if(magic.damageReduction > 0.0){
-                moveList++;
-                cout << moveList << ". Damage reduction: " << magic.damageReduction << endl;
-                chosenSkills.push_back({moveList, magic.name});
-            }
-            if(magic.damage > 0){
-                moveList++;
-                cout << moveList << ". Damage: " << magic.damage << endl;
-                chosenSkills.push_back({moveList, magic.name});
-            }
-            cout << " > Description: " << magic.description << endl;
-        }
-
-        cout << blue << "------------WEAPONS--------------" << endl;
-
-        //list abilities for weapons
-        for(const auto& weapon : playerWeapons){
-            cout << cyan << weapon.name << endl;
-            for(const auto& ability : weapon.abilities){
-                moveList++;
-                cout << blue << moveList << ". " << ability.name << " " << ability.damage << " damage : " << ability.description << endl;
-                chosenSkills.push_back({moveList, ability.name});
-            }
-            cout << endl;
-        }
-
-        cout << green << "Enter a move you want to use: " << endl;
-
-        getline(cin, input);
-        try{
-            chosenMove = stoi(input);
-        }catch(const exception& e){
-            cout << "Invalid input, enter a valid number" << endl;
-            continue;
-        }
-        cout << darkRed << "Chosen move: " << chosenSkills[chosenMove - 1].second << endl;
-
-        break;
-
-        if(exodiusHealth <= 0){ //when exodius is dead
-            dynamicText("LORD EXODIUS DEFEATED", 60, green, true);
-            break;
-        }
+        
     }
+
+    //wow that alot of code for a boss battle
+    dynamicText("His remains disintegrate into a pile of dust, leaving behind a glowing sword with a green gem in its hilt and a dark orb carrying his magic essence", 75, green, true);
+    dynamicText("You pick up the sword, feeling its warmth and power coursing through your veins", 75, green, true);
+    dynamicText("After, you pick up the orb, feeling his power flow through your viens", 75, green, true);
+    playerWeapons.push_back(Weapon(
+        "Sword of Exodius",
+        "Sword obtained from the remains of Lord Exodius, radiating his power when wielded",
+        40,
+        {
+            {"Midnight Cleave", 80, "A powerful cleave that channels the dark energy of Exodius, takes away 15 hp to use", true},
+            {"Shadow Strike", 60, "A swift strike that harnesses the shadows, dealing heavy damage", true},
+            {"Dark Wave", 100, "Unleash a wave of dark energy that damages all enemies, takes away 20 hp to use", true}
+        }
+    ));
+    playerMagics.push_back(MagicAbility(
+        "Exodius's Shadow",
+        "Magic obtained from the essence of Lord Exodius, grants powerful dark abilities",
+        0,
+        0,
+        false,
+        false,
+        {
+            {"Cloak", 0, "50/50 chance to dodge next attack", 0, 1.0},
+            {"Dark Strike", 70, "Materialize a spear in the palm of your hand and throw it at the enemy", 0, 0.0},
+        }
+    ));
+
+
     
     gameRunning = false;      // Tell the monitor thread to stop
     monitorThread.join();     // Wait for it to finish
