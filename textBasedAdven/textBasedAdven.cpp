@@ -13,13 +13,13 @@ struct BossAttack{
     string name;
     int damage;
     string description;
-}
+};
 struct Boss{
     string name;
     int health;
     vector<BossAttack> attacks;
     vector<string> voicelines;
-}
+};
 struct Ability {
     string name;
     int damage;
@@ -222,18 +222,161 @@ void dynamicText(const string& text, int delayMs, const string& colorCode, bool 
     }
 }
 
-void bossBattle{(
+void bossBattle(
     Boss& boss,
     vector<Weapon>& playerWeapons,
     vector<MagicAbility>& playerMagics,
     vector<string>& itemsInBattle,
     vector<string>& plyrInventory,
-    int& playerHealth,
+    int playerHealth,
     bool& hasPotion,
     const string& red, const string& green, const string& yellow, const string& blue, const string& magenta, const string& cyan, const string& white, const string& reset, const string& darkRed //colors
 ){
+    while(boss.health > 0 && playerHealth > 0){
+        //display health of exodius and player
+        cout << red << "-----------------------------------" << endl;
+        cout << darkRed << boss.name << " Health: " << boss.health << endl;
+        cout << blue << "Your health: " << playerHealth << endl;
+        cout << reset << "-----------------------------------" << endl;
+        cout << yellow << "Current items in use:" << endl;
+        cout << blue;  
+        for(size_t i = 0; i < itemsInBattle.size(); ++i){
+            cout << i+1 << ". " << itemsInBattle[i] << endl;
+        }
+        cout << reset << "-----------------------------------" << endl;
+        cout << cyan << "Magic Abilities: " << endl;
+        cout << endl;
+        string input;
+        int moveList = 0;
+        int chosenMove = 0;
+        vector<Skill>chosenSkills;
+        for(const auto& magic: playerMagics){
+            cout << magic.name << ":" << endl;
+            if(magic.damageReduction > 0.0){
+                moveList++;
+                cout << moveList << ". Damage reduction: " << magic.damageReduction << endl;
+                chosenSkills.push_back({magic.name, magic.damage, moveList, magic.damageReduction});
+            }
+            if(magic.damage > 0){
+                moveList++;
+                cout << moveList << ". Damage: " << magic.damage << endl;
+                chosenSkills.push_back({
+                    magic.name,
+                    magic.damage,
+                    moveList,
+                    0.0
+                });
+            }
+            cout << " > Description: " << magic.description << endl;
+        }
 
-}
+        cout << blue << "------------WEAPONS--------------" << endl;
+
+        //list abilities for weapons
+        for(const auto& weapon : playerWeapons){
+            cout << cyan << weapon.name << endl;
+            for(const auto& ability : weapon.abilities){
+                moveList++;
+                cout << blue << moveList << ". " << ability.name << " " << ability.damage << " damage : " << ability.description << endl;
+                chosenSkills.push_back({
+                    ability.name,
+                    ability.damage,
+                    moveList,
+                    0.0
+                });
+            }
+            cout << endl;
+        }
+
+        cout << green << "Enter a move you want to use: " << endl;
+
+        getline(cin, input);
+        try{
+            chosenMove = stoi(input);
+        }catch(const exception& e){
+            cout << "Invalid input, enter a valid number" << endl;
+            continue;
+        }
+        cout << darkRed << "Chosen move: " << chosenSkills[chosenMove - 1].name << endl;
+        int damage = chosenSkills[chosenMove - 1].damage;
+        double damageReduction = 0.0;
+        if(chosenSkills[chosenMove - 1].damageReduction > 0.0){
+            damageReduction = chosenSkills[chosenMove - 1].damageReduction;
+        }
+        
+        this_thread::sleep_for(chrono::milliseconds(250));
+
+        cout << darkRed << "You attempt to use " << chosenSkills[chosenMove - 1].name << " on" << boss.name << " ..." << reset << endl;
+
+        if(damage > 0 && damageReduction == 0.0){ //only damage
+            //50% chance attack works or fails
+            int randChance = rand() % 10;
+            if(randChance != 0){
+                //rand crit hit 20% chance
+                int critChance = rand() % 5;
+                if(critChance == 0){
+                    string textOutput = "CRITICAL HIT! " + chosenSkills[chosenMove - 1].name + " hits " + boss.name + " for " + to_string(damage + (damage / 2)) + " damage!";
+                    dynamicText(textOutput, 50, darkRed, true);
+                    boss.health -= damage + (damage / 2);
+                }else{
+                    string textOutput = chosenSkills[chosenMove - 1].name + " hits " + boss.name + " for " + to_string(damage) + " damage!";
+                    dynamicText(textOutput, 50, darkRed, true);
+                    boss.health -= damage;
+                }
+            }else{
+                string textOutput = chosenSkills[chosenMove - 1].name + " missed! 0 damage dealt!";
+                dynamicText(textOutput, 50, red, true);
+            }
+        }else if(damageReduction > 0.0 && damage == 0){ //only damage reduction
+            dynamicText("You brace yourself...", 50, cyan, true);
+        }
+
+        if(boss.health <= 0){
+            dynamicText(boss.name + " DEFEATED", 60, green, true);
+            break;
+        }
+
+        int voiceLineIndex = rand() % boss.voicelines.size();
+        dynamicText(boss.voicelines[voiceLineIndex], 75, darkRed, true);
+
+        
+        int attackIndex = rand() % boss.attacks.size();
+        const BossAttack& attack = boss.attacks[attackIndex];
+        dynamicText(boss.name + " uses " + attack.name + " " + attack.description, 50, darkRed, true);
+        int damageTaken = attack.damage - static_cast<int>(attack.damage * damageReduction);
+        playerHealth -= damageTaken;
+        cout << red << "You lose " << damageTaken << " health!" << reset << endl;
+
+        //act player if they want to use potion
+        string usePotion;
+        if(hasPotion){
+            //search for potion in battle items
+            for(const string& item : itemsInBattle){
+                if(item == "Health Potion"){
+                    cout << yellow << "Do you want to use a Health Potion? (yes/no): " << reset << endl;
+                    getline(cin, usePotion);
+                    for(char& c : usePotion) c = tolower(c); //convert to lowercase
+                    break;
+                }
+            }
+            if(usePotion == "yes"){
+                playerHealth += 20;
+                if(playerHealth > 100) playerHealth = 100;
+                cout << green << "Potion used! Health +20" << reset << endl;
+                //remove one potion from battle items and inventory
+                for(auto it = itemsInBattle.begin(); it != itemsInBattle.end(); ++it){
+                    if(*it == "Health Potion"){
+                        itemsInBattle.erase(it);
+                        auto invIt = find(plyrInventory.begin(), plyrInventory.end(), "Health Potion");
+                        if(invIt != plyrInventory.end()){
+                            plyrInventory.erase(invIt);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 int main() {
@@ -502,7 +645,25 @@ int main() {
     system("clear"); //clear terminal
     int exodiusHealth = 200;
      while(true){ //boss battle
-        
+        Boss exodius = {
+            "Lord Exodius",
+            200,
+            {
+                {"Midnight Blade", 30, "dealing 30 damage!"},
+                {"Shadow Slash", 20, "dealing 20 damage!"},
+                {"Dark Pulse", 25, "dealing 25 damage!"}
+            },
+            {
+                "[Lord Exodius]: I see how it is...",
+                "[Lord Exodius]: Is that all you've got?",
+                "[Lord Exodius]: Hah. Weak.",
+                "[Lord Exodius]: You'll have to do better than that!",
+                "[Lord Exodius]: Pathetic.",
+                "[Lord Exodius]: I am.. inevitable.",
+            }
+        };
+
+        bossBattle(exodius, playerWeapons, playerMagics, itemsInBattle, plyrInventory, playerHealth.load(), hasPotion, red, green, yellow, blue, magenta, cyan, white, reset, darkRed);
     }
 
     //wow that alot of code for a boss battle
