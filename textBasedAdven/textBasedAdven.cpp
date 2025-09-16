@@ -27,7 +27,7 @@ struct Ability
     string name;
     int damage;
     string description;
-    bool removeHealth;
+    int removeHealth;
 };
 struct MagicAbilitySkill
 {
@@ -483,13 +483,13 @@ int main()
 
     if (isOnlyInt(playerName))
     {
-        cout << red << "Invalid name (cannot be only numbers or epty), defaulting to Player1" << reset << endl;
-        playerName = "Player1";
+        cout << red << "Invalid name (cannot be only numbers or epty), defaulting to Player" << reset << endl;
+        playerName = "Player";
     }
     else if (playerName.empty() || playerName == " ")
     {
-        cout << red << "Invalid name (cannot be only numbers or epty), defaulting to Player1" << reset << endl;
-        playerName = "Player1";
+        cout << red << "Invalid name (cannot be only numbers or epty), defaulting to Player" << reset << endl;
+        playerName = "Player";
     }
     else
     {
@@ -807,8 +807,10 @@ int main()
     itemsInBattle.clear();
 
     // wow that alot of code for a boss battle
+    dynamicText("ALL HEALTH RESTORED - ONE TIME EVENT, NO HEALTH RESTORATION AFTER BOSS BATTLES IN THE FUTURE", 25, green, true);
+    playerHealth = 100;
     dynamicText("As Exodius falls to the ground, hand cletching againts his chest, he looks up at you with final words", 65, red, true);
-    dynamicText("[Lord Exodius]; Heh... here I thought I was immortal... I thought I was.. a god...", 75, darkRed, true);
+    dynamicText("[Lord Exodius]: Heh... here I thought I was immortal... I thought I was.. a god...", 75, darkRed, true);
     dynamicText("With that, he takes his last breath and falls silent", 75, red, true);
     dynamicText("His remains disintegrate into a pile of dust, leaving behind a glowing sword with a green gem in its hilt and a dark orb carrying his magic essence", 75, yellow, true);
     dynamicText("You pick up the sword, feeling its warmth and power coursing through your veins", 75, magenta, true);
@@ -818,9 +820,9 @@ int main()
         "Sword obtained from the remains of Lord Exodius, radiating his power when wielded",
         40,
         {
-            {"Midnight Cleave", 80, "A powerful cleave that channels the dark energy of Exodius, takes away 15 hp to use", true},
-            {"Shadow Strike", 60, "A swift strike that harnesses the shadows, dealing heavy damage", true},
-            {"Dark Wave", 100, "Unleash a wave of dark energy that damages all enemies, takes away 20 hp to use", true}
+            {"Midnight Cleave", 80, "A powerful cleave that channels the dark energy of Exodius, takes away 15 hp to use", 15},
+            {"Shadow Strike", 60, "A swift strike that harnesses the shadows, dealing heavy damage", 0},
+            {"Dark Wave", 100, "Unleash a wave of dark energy that damages all enemies, takes away 20 hp to use", 20}
         }
     ));
 
@@ -856,33 +858,67 @@ int main()
     }
 
     dynamicText("You open the door reluctantly, and a bright light flashes your eyes, when you come to your senses, you appear in a large room with another locked door infront of you.. but a sense of", 75, yellow, false);
-    dynamicText("impending doom flows over your shoulders", 75, darkRed, true);
+    dynamicText(" impending doom flows over your shoulders", 75, darkRed, true);
 
     //wave of enemies
     dynamicText("Suddenly, mutiple creatures appear infront of you, faces full of revenge", 50, red, true);
     dynamicText("[Mysterious Creature]: HOW DARE YOU DEFEAT OUR LORD! MEET YOUR DOOM!", 100, darkRed, true);
 
     while(true){
-        int numEnemies = 5;
+        int wave = 1;
+        int numEnemies;
+        if(wave == 1){
+            numEnemies = 5;
+        }else if(wave == 2){
+            numEnemies = 10;
+        }else if(wave == 3){
+            numEnemies = 20;
+        }
+        string in;
+        int chosenMove;
+        int movelist = 0;
         vector<Skill> chosenSkills;
         cout << cyan << "------------MAGICS--------------" << endl;
         for (const auto& magic : playerMagics) {
             cout << magic.name << ":" << endl;
             if (magic.damageReduction > 0.0) {
-                cout << "Damage reduction: " << magic.damageReduction << endl;
-                chosenSkills.push_back({magic.name, magic.damage, 0, magic.damageReduction});
+                movelist++;
+                cout << "[" << movelist << "] " << "Damage reduction: " << magic.damageReduction << endl;
+                chosenSkills.push_back({magic.name, magic.damage, movelist, magic.damageReduction, 0, false});
             }
-            if(magic.isBinding){
-                cout << "Binding Magic: " << magic.name << endl;
-                chosenSkills.push_back({magic.name, magic.damage, 0, 0.0, true});
+            for(const auto& magicabil : magic.abilities){
+                movelist++;
+                cout << "[" << movelist << "] " << " " << magicabil.name << " (" << magicabil.damage << " damage): " << magicabil.description;
+                if(magicabil.isBinding) cout << " [Binding Ability]";
+                cout << endl;
+                chosenSkills.push_back({magicabil.name, magicabil.damage, movelist, magicabil.damageReduction, magicabil.removeHP, magicabil.isBinding});
             }
             if(magic.damage > 0) {
-                cout << "Damage: " << magic.damage << endl;
-                chosenSkills.push_back({magic.name, magic.damage, 0, 0.0});
+                movelist++;
+                cout << "[" << movelist << "] " << "Damage: " << magic.damage << endl;
+                chosenSkills.push_back({magic.name, magic.damage, movelist, magic.damageReduction, 0, false});
             }
             cout << " > Description: " << magic.description << endl;
         }
+        cout << blue << "------------WEAPONS--------------" << endl;
+        for(const auto &weapon : playerWeapons){
+            cout << cyan << weapon.name << endl;
+            for(const auto &ability : weapon.abilities){
+                movelist++;
+                cout << blue << "[" << movelist << "] " << ability.name << " " << ability.damage << " damage : " << ability.description << endl;
+                chosenSkills.push_back({ability.name, ability.damage, movelist, 0.0, ability.removeHealth, false});
+            }
+        }
+        getline(cin, in);
 
+        try{
+            chosenMove = stoi(in);
+
+        }catch (const exception &e){
+            cout << "Invalid input, enter a valid number" << endl;
+            continue;
+        }
+        
     }
 
 
