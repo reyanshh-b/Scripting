@@ -38,6 +38,14 @@ struct MagicAbilitySkill
     float damageReduction;
     bool isBinding;
 };
+struct Armor{
+    string name;
+    string description;
+    double damageReduction;
+    Armor(const string &n, const string &desc, double reduction)
+        : name(n), description(desc), damageReduction(reduction) {}
+    
+};
 struct Skill
 {
     string name;
@@ -277,6 +285,7 @@ void bossBattle(
     vector<MagicAbility> &playerMagics,
     vector<string> &itemsInBattle,
     vector<string> &plyrInventory,
+    vector<Armor> &playerArmors,
     int playerHealth,
     bool &hasPotion,
     const string &red, const string &green, const string &yellow, const string &blue, const string &magenta, const string &cyan, const string &white, const string &reset, const string &darkRed // colors
@@ -309,7 +318,7 @@ void bossBattle(
             {
                 moveList++;
                 cout << moveList << ". Damage reduction: " << magic.damageReduction << endl;
-                chosenSkills.push_back({magic.name, magic.damage, moveList, magic.damageReduction});
+                chosenSkills.push_back({magic.name, magic.damage, moveList, magic.damageReduction, false});
             }
             if (magic.damage > 0)
             {
@@ -318,7 +327,8 @@ void bossBattle(
                 chosenSkills.push_back({magic.name,
                                         magic.damage,
                                         moveList,
-                                        0.0});
+                                        0.0,
+                                        false});
             }
             cout << " > Description: " << magic.description << endl;
         }
@@ -328,18 +338,28 @@ void bossBattle(
         // list abilities for weapons
         for (const auto &weapon : playerWeapons)
         {
-            cout << cyan << weapon.name << endl;
-            for (const auto &ability : weapon.abilities)
-            {
-                moveList++;
-                cout << blue << moveList << ". " << ability.name << " " << ability.damage << " damage : " << ability.description << endl;
-                chosenSkills.push_back({ability.name,
-                                        ability.damage,
-                                        moveList,
-                                        0.0});
+            if(find(itemsInBattle.begin(), itemsInBattle.end(), weapon.name) != itemsInBattle.end()){
+                cout << cyan << weapon.name << endl;
+                for (const auto &ability : weapon.abilities)
+                {
+                    moveList++;
+                    cout << blue << moveList << ". " << ability.name << " " << ability.damage << " damage : " << ability.description << endl;
+                    chosenSkills.push_back({ability.name, ability.damage, moveList, 0.0, false});
+                }
+                cout << endl;
             }
-            cout << endl;
         }
+
+        cout << blue << "------------ARMOR--------------" << endl;
+        for(const auto& armor : playerArmors){
+            cout << " - " << armor.name << ": " << armor.description << " (Damage Reduction: " << armor.damageReduction * 100 << "%)" << reset << endl;
+        }
+
+        double totalArmorReduction = 0.0;
+        for (const auto &armor : playerArmors){
+            totalArmorReduction += armor.damageReduction;
+        }
+        if (totalArmorReduction > 0.8) totalArmorReduction = 0.8; // cap at 80% reduction
 
         cout << green << "Enter a move you want to use: " << endl;
 
@@ -409,7 +429,9 @@ void bossBattle(
         int attackIndex = rand() % boss.attacks.size();
         const BossAttack &attack = boss.attacks[attackIndex];
         dynamicText(boss.name + " uses " + attack.name + " " + attack.description, 50, darkRed, true);
-        int damageTaken = attack.damage - static_cast<int>(attack.damage * damageReduction);
+        int damageTaken = attack.damage;
+        damageTaken -= static_cast<int>(attack.damage * (damageReduction * totalArmorReduction));
+        if(damageTaken < 0) damageTaken = 0;
         playerHealth -= damageTaken;
         cout << red << "You lose " << damageTaken << " health!" << reset << endl;
 
@@ -477,6 +499,7 @@ int main()
     vector<MagicAbility> playerMagics;
     vector<Weapon> playerWeapons;
     vector<string> potions;
+    vector<Armor> playerArmors;
     bool hasPotion = false;
 
     getline(cin, playerName);
@@ -750,8 +773,8 @@ int main()
         else if (doorChoice == "right")
         {
             // cout << red << "An eerie vibe comes from the room, as you walk in, you see a silver blue chest infront of you, when you open it," << blue << " you find a sword emitting a powerful aura from it, you reach out to take it and feel a sensation flow through your arms." << reset << endl;
-            dynamicText("An eerie vibe comes from the room, as you walk in, you see a silver blue chest infront of you, when you open it,", 100, red, false);
-            dynamicText(" you find a sword emitting a powerful aura from it, you reach out to take it and feel a sensation flow through your arms.", 100, blue, true);
+            dynamicText("An eerie vibe comes from the room, as you walk in, you see a silver blue chest infront of you, when you open it,", 60, red, false);
+            dynamicText(" you find a sword emitting a powerful aura from it, you reach out to take it and feel a sensation flow through your arms.", 55, blue, true);
             playerWeapons.push_back(Weapon(
                 "Sword of Destiny",
                 "Sword obtained in Lord Exodius's room",
@@ -761,18 +784,18 @@ int main()
                  {"Normal Slash", 25, "A quick slash", false}}));
             plyrInventory.push_back("Sword of Destiny");
             dynamicText("Sword of Destiny added to inventory", 35, cyan, true);
-            dynamicText("You continue walking down the room which gets darker and darker as you get futhur from the entrance, which has now disapeared, a deep voice fills the room", 100, red, true);
-            dynamicText("[???]: I've been waiting for you... ", 200, green, false);
-            dynamicText(playerName, 200, red, true);
+            dynamicText("You continue walking down the room which gets darker and darker as you get futhur from the entrance, which has now disapeared, a deep voice fills the room", 60, red, true);
+            dynamicText("[???]: I've been waiting for you... ", 100, green, false);
+            dynamicText(playerName, 100, red, true);
             dynamicText("The ground shakes at the boom of his voice", 10, red, true);
-            dynamicText("[You]: Who... who are you?", 150, blue, true);
+            dynamicText("[You]: Who... who are you?", 100, blue, true);
             dynamicText(
                 "[???]: I am Lord Exodious, you enter my domain, now you'll never leave.",
-                90,
+                85,
                 green,
                 true);
-            dynamicText("A giant figure materializes infront of you, towering over you, his eyes glow a bright red color, and his armor is black as night", 100, red, true);
-            dynamicText("[Lord Exodius]: Prepare to beg for mercy!", 175, darkRed, true);
+            dynamicText("A giant figure materializes infront of you, towering over you, his eyes glow a bright red color, and his armor is black as night", 70, red, true);
+            dynamicText("[Lord Exodius]: Prepare to meet your demise!", 10, darkRed, true);
 
             // intialize pre-battle sequence
             itemsInBattle = preBattleSequence(plyrInventory, playerMagics, red, green, yellow, blue, cyan, reset);
@@ -801,7 +824,7 @@ int main()
             "[Lord Exodius]: I am.. inevitable.",
         }};
 
-    bossBattle(exodius, playerWeapons, playerMagics, itemsInBattle, plyrInventory, playerHealth.load(), hasPotion, red, green, yellow, blue, magenta, cyan, white, reset, darkRed);
+    bossBattle(exodius, playerWeapons, playerMagics, itemsInBattle, plyrInventory, playerArmors, playerHealth.load(), hasPotion, red, green, yellow, blue, magenta, cyan, white, reset, darkRed);
 
     //clear itemsInBattle
     itemsInBattle.clear();
@@ -812,7 +835,7 @@ int main()
     dynamicText("As Exodius falls to the ground, hand cletching againts his chest, he looks up at you with final words", 65, red, true);
     dynamicText("[Lord Exodius]: Heh... here I thought I was immortal... I thought I was.. a god...", 75, darkRed, true);
     dynamicText("With that, he takes his last breath and falls silent", 75, red, true);
-    dynamicText("His remains disintegrate into a pile of dust, leaving behind a glowing sword with a green gem in its hilt and a dark orb carrying his magic essence", 75, yellow, true);
+    dynamicText("His remains disintegrate into a pile of dust, leaving behind a glowing sword with a green gem in its hilt, a dark orb carrying his magic essence, and his armor", 75, yellow, true);
     dynamicText("You pick up the sword, feeling its warmth and power coursing through your veins", 75, magenta, true);
 
     playerWeapons.push_back(Weapon(
@@ -844,7 +867,15 @@ int main()
         }
     ));
 
-    dynamicText("New Magic unlocked: Exodius's Shadow", 25, blue, true);
+    dynamicText("New Magic unlocked: Exodius's Shadow", 25, green, true);
+
+    dynamicText("You pick up the armor, feeling a surge of protection", 75, blue, true);
+
+    playerArmors.push_back(Armor(
+        "Armor of Exodius",
+        "Armor obtained from the remains of Exodius, Reduces damage taken by 15% (during any fights)",
+        0.15
+    ));
 
     dynamicText("A chest appears infront of you while you begin to leave, inside of it appears a key... maybe it unlocks the other door?", 75, yellow, true);
     plyrInventory.push_back("Old Key");
@@ -867,12 +898,16 @@ int main()
     while(true){
         int wave = 1;
         int numEnemies;
+        int eachEnemyHealth;
         if(wave == 1){
             numEnemies = 5;
+            eachEnemyHealth = 20;
         }else if(wave == 2){
             numEnemies = 10;
+            eachEnemyHealth = 35;
         }else if(wave == 3){
             numEnemies = 20;
+            eachEnemyHealth = 45;
         }
         string in;
         int chosenMove;
@@ -918,7 +953,44 @@ int main()
             cout << "Invalid input, enter a valid number" << endl;
             continue;
         }
-        
+
+        cout << red << "Chosen move: " << chosenSkills[chosenMove - 1].name << endl;
+
+        //check if the move removes health
+        if(chosenSkills[chosenMove - 1].healthRemove > 0){
+            if(playerHealth <= chosenSkills[chosenMove - 1].healthRemove){
+                playerHealth = 0;
+                cout << red << "You used " << chosenSkills[chosenMove - 1].name;
+            }else{
+                playerHealth -= chosenSkills[chosenMove - 1].healthRemove;
+            }
+        }
+        int damage = chosenSkills[chosenMove - 1].damage;
+
+        //code for only damage moves
+        if(damage > 0 && chosenSkills[chosenMove - 1].damageReduction){
+            int maxEnemiesCanDie = damage / eachEnemyHealth;
+            int enemiesKilled = 0;
+
+            if(maxEnemiesCanDie > 0){
+                rand % maxEnemiesCanDie; // random num of enemies killed
+            }
+
+            g
+
+        }
+
+        int damageToDeal = numEnemies * eachEnemyHealth;
+        if(damageToDeal < 0){
+            wave++;
+            if(wave > 3){
+                break;
+            }
+            continue;
+        }
+
+
+
     }
 
 
