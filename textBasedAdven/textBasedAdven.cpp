@@ -288,7 +288,8 @@ void bossBattle(
     vector<Armor> &playerArmors,
     int playerHealth,
     bool &hasPotion,
-    const string &red, const string &green, const string &yellow, const string &blue, const string &magenta, const string &cyan, const string &white, const string &reset, const string &darkRed // colors
+    const string &red, const string &green, const string &yellow, const string &blue, const string &magenta, const string &cyan, const string &white, const string &reset, const string &darkRed, // colors
+    bool &isDead
 )
 {
     while (boss.health > 0 && playerHealth > 0)
@@ -474,6 +475,12 @@ void bossBattle(
             }
         }
     }
+
+    
+    if(playerHealth <= 0){
+        isDead = true;
+        playerHealth = 0;
+    }
 }
 
 int main()
@@ -500,6 +507,7 @@ int main()
     vector<Weapon> playerWeapons;
     vector<string> potions;
     vector<Armor> playerArmors;
+    bool isDead = false;
     bool hasPotion = false;
 
     getline(cin, playerName);
@@ -822,9 +830,21 @@ int main()
             "[Lord Exodius]: You'll have to do better than that!",
             "[Lord Exodius]: Pathetic.",
             "[Lord Exodius]: I am.. inevitable.",
-        }};
+        }
+    };
 
-    bossBattle(exodius, playerWeapons, playerMagics, itemsInBattle, plyrInventory, playerArmors, playerHealth.load(), hasPotion, red, green, yellow, blue, magenta, cyan, white, reset, darkRed);
+    bossBattle(exodius, playerWeapons, playerMagics, itemsInBattle, plyrInventory, playerArmors, playerHealth.load(), hasPotion, red, green, yellow, blue, magenta, cyan, white, reset, darkRed, isDead);
+
+    
+
+    //problem - playerhealth becomes 100 out of nowhere after battle - fix by 
+
+    if(playerHealth == 0 || playerHealth < 0 || isDead){
+        dynamicText("You have been defeated by Lord Exodius...", 50, red, true);
+        dynamicText("Game Over", 100, darkRed, true);
+        monitorThread.detach(); // stop health monitor thread
+        return 0;
+    }
 
     //clear itemsInBattle
     itemsInBattle.clear();
@@ -973,13 +993,16 @@ int main()
             int enemiesKilled = 0;
 
             if(maxEnemiesCanDie > 0){
-                rand % maxEnemiesCanDie; // random num of enemies killed
+                enemiesKilled = rand() % maxEnemiesCanDie; // random num of enemies killed
+                numEnemies -= enemiesKilled;
+                if(numEnemies < 0) numEnemies = 0;
+                dynamicText("Your moved killed " + to_string(enemiesKilled) + " enemies!", 45, green, true);
+            }else if (maxEnemiesCanDie == 0){
+                dynamicText("Your move didn't deal enough damage - 0 enemies killed", 45, red, true);
             }
 
-            g
-
         }
-
+        
         int damageToDeal = numEnemies * eachEnemyHealth;
         if(damageToDeal < 0){
             wave++;
