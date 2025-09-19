@@ -172,7 +172,7 @@ void useInventoryItems(vector<string> &plyrInventory, vector<MagicAbility> &play
     }
 }
 
-vector<string> preBattleSequence(vector<string> &plyrInventory, vector<MagicAbility> &playerMagics, const string &red, const string &green, const string &yellow, const string &blue, const string &cyan, const string &reset)
+vector<string> preBattleSequence(vector<string> &plyrInventory, vector<MagicAbility> &playerMagics, const string &red, const string &green, const string &yellow, const string &blue, const string &cyan, const string &reset, vector<Armor> &playerArmors)
 {
     cout << yellow << "Inventory:" << endl;
     if (plyrInventory.empty())
@@ -253,6 +253,20 @@ vector<string> preBattleSequence(vector<string> &plyrInventory, vector<MagicAbil
                     }
                     battleItems.push_back("Sword of Destiny");
                     cout << cyan << "Sword of Destiny will be used during battle" << reset << endl;
+                }else if(plyrInventory[itemNum - 1] == "Armor of Exodius"){
+                    bool alreadyInBattle = false;
+                    for(const string &item : battleItems){
+                        if(item == "Armor of Exodius"){
+                            alreadyInBattle = true;
+                            break;
+                        }
+                    }
+                    if(alreadyInBattle){
+                        cout << red << "You can only use one" << cyan << "Armor of Exodius" << red << "during battle" << reset << endl;
+                        continue;
+                    }
+                    battleItems.push_back("Armor of Exodius");
+                    cout << cyan << "Armor of Exodius will be used during battle" << reset << endl;
                 }
                 else
                 {
@@ -353,14 +367,17 @@ void bossBattle(
 
         cout << blue << "------------ARMOR--------------" << endl;
         for(const auto& armor : playerArmors){
-            cout << " - " << armor.name << ": " << armor.description << " (Damage Reduction: " << armor.damageReduction * 100 << "%)" << reset << endl;
+            if(find(itemsInBattle.begin(), itemsInBattle.end(), armor.name) != itemsInBattle.end()){
+                cout << " - " << armor.name << ": " << armor.description << " (Damage Reduction: " << armor.damageReduction * 100 << "%)" << reset << endl;
+            }
+            cout << endl;
         }
 
         double totalArmorReduction = 0.0;
         for (const auto &armor : playerArmors){
             totalArmorReduction += armor.damageReduction;
         }
-        if (totalArmorReduction > 0.8) totalArmorReduction = 0.8; // cap at 80% reduction
+        
 
         cout << green << "Enter a move you want to use: " << endl;
 
@@ -806,7 +823,7 @@ int main()
             dynamicText("[Lord Exodius]: Prepare to meet your demise!", 10, darkRed, true);
 
             // intialize pre-battle sequence
-            itemsInBattle = preBattleSequence(plyrInventory, playerMagics, red, green, yellow, blue, cyan, reset);
+            itemsInBattle = preBattleSequence(plyrInventory, playerMagics, red, green, yellow, blue, cyan, reset, playerArmors);
             cout << cyan << "Magics will automatically be equipped in battle" << endl;
             cout << magenta << "Beginning battle..." << reset << endl;
 
@@ -819,7 +836,7 @@ int main()
     system("clear"); // clear terminal
     Boss exodius = {
         "Lord Exodius",
-        200,
+        250,
         {{"Midnight Blade", 30, "dealing 30 damage!"},
          {"Shadow Slash", 20, "dealing 20 damage!"},
          {"Dark Pulse", 25, "dealing 25 damage!"}},
@@ -896,7 +913,7 @@ int main()
         "Armor obtained from the remains of Exodius, Reduces damage taken by 15% (during any fights)",
         0.15
     ));
-
+    dynamicText("Armor of Exodius added to inventory", 25, blue, true);
     dynamicText("A chest appears infront of you while you begin to leave, inside of it appears a key... maybe it unlocks the other door?", 75, yellow, true);
     plyrInventory.push_back("Old Key");
     dynamicText("Old Key added to inventory", 25, yellow, true);
@@ -912,7 +929,7 @@ int main()
     dynamicText(" impending doom flows over your shoulders", 75, darkRed, true);
 
     //wave of enemies
-    dynamicText("Suddenly, mutiple creatures appear infront of you, faces full of revenge", 50, red, true);
+    dynamicText("Suddenly, multiple creatures appear infront of you, faces full of revenge", 50, red, true);
     dynamicText("[Mysterious Creature]: HOW DARE YOU DEFEAT OUR LORD! MEET YOUR DOOM!", 100, darkRed, true);
 
     while(true){
@@ -929,10 +946,17 @@ int main()
             numEnemies = 20;
             eachEnemyHealth = 45;
         }
+        int damageToNextWave = numEnemies * eachEnemyHealth;
         string in;
         int chosenMove;
         int movelist = 0;
         vector<Skill> chosenSkills;
+        //cant use the same move twice in a row
+        vector<int> usedMoves;
+        cout << cyan << "-----------------INFO------------------" << endl;
+        cout << green << "Health: " << playerHealth << endl;
+        cout << yellow << "Wave: " << wave << endl;
+        cout << red << "Enemies remaining: " << numEnemies << endl;
         cout << cyan << "------------MAGICS--------------" << endl;
         for (const auto& magic : playerMagics) {
             cout << magic.name << ":" << endl;
@@ -973,43 +997,90 @@ int main()
             cout << "Invalid input, enter a valid number" << endl;
             continue;
         }
-
         cout << red << "Chosen move: " << chosenSkills[chosenMove - 1].name << endl;
+        if(usedMoves.back() == chosenMove){
+            dynamicText("You cannot use the same move twice in a row!", 50, red, true);
+            continue;
+        }
+        usedMoves.push_back(chosenMove);
+
+        int damage = chosenSkills[chosenMove - 1].damage;
+        int damageReduction = 0;
+        damageReduction = chosenSkills[chosenMove - 1].damageReduction;
 
         //check if the move removes health
         if(chosenSkills[chosenMove - 1].healthRemove > 0){
             if(playerHealth <= chosenSkills[chosenMove - 1].healthRemove){
                 playerHealth = 0;
-                cout << red << "You used " << chosenSkills[chosenMove - 1].name;
+                cout << darkRed << "idiot u had less health than the move takes away, u died lol" << reset << endl;
+                isDead = true;
+                break;
             }else{
                 playerHealth -= chosenSkills[chosenMove - 1].healthRemove;
             }
         }
-        int damage = chosenSkills[chosenMove - 1].damage;
 
-        //code for only damage moves
-        if(damage > 0 && chosenSkills[chosenMove - 1].damageReduction){
-            int maxEnemiesCanDie = damage / eachEnemyHealth;
-            int enemiesKilled = 0;
-
-            if(maxEnemiesCanDie > 0){
-                enemiesKilled = rand() % maxEnemiesCanDie; // random num of enemies killed
-                numEnemies -= enemiesKilled;
-                if(numEnemies < 0) numEnemies = 0;
-                dynamicText("Your moved killed " + to_string(enemiesKilled) + " enemies!", 45, green, true);
-            }else if (maxEnemiesCanDie == 0){
-                dynamicText("Your move didn't deal enough damage - 0 enemies killed", 45, red, true);
-            }
-
+        //damage the enemies
+        if(damage > 0){
+            int enemiesKilled = damage / eachEnemyHealth;
+            dynamicText("Your move killed " + to_string(enemiesKilled) + " enemies!", 50, red, true);
+            numEnemies -= enemiesKilled;
         }
-        
-        int damageToDeal = numEnemies * eachEnemyHealth;
-        if(damageToDeal < 0){
-            wave++;
-            if(wave > 3){
-                break;
+
+        vector<string> enemyVoicelines = {
+            "[Mysterious Creature]: FOR EXODIUS!!",
+            "[Mysterious Creature]: ugh!",
+            "[Mysterious Creature]: GRAAAHHH!",
+            "[Mysterious Creature]: ARRGGHH!",
+            "[Mysterious Creature]: YOU WILL PAY FOR THIS!",
+        };
+
+        int vcIndex = rand() % enemyVoicelines.size();
+        dynamicText(enemyVoicelines[vcIndex], 65, darkRed, true);
+
+        if(damageReduction > 0){
+            dynamicText("You brace yourself...", 50, cyan, true);
+        }
+        //enemies attack
+        struct enemyAttack{
+            int id;
+            int dmg;
+            string desc;
+        };
+        vector<enemyAttack> enemyAttacks = {
+            {1, 10, "An enemy does a switch punch to your face, -10 hp"},
+            {2, 15, "An enemy does a swift kick to your gut, -15 hp"},
+            {3, 20, "An enemy does a heavy slam to your back, -20 hp"},
+            {4, 25, "A group of enemies tackle you and pin you on the ground, -25 hp"}
+        };
+
+        //first check if the user used a binding move
+        bool isBinded = chosenSkills[chosenMove - 1].isBinding;
+        if(!isBinded){
+            int totalEnemyDmg = 0;
+            for(int i = 0; i < numEnemies; i++){
+                int attackIndex = rand() % enemyAttacks.size();
+                totalEnemyDmg += enemyAttacks[attackIndex].dmg;
+                dynamicText(enemyAttacks[attackIndex].desc, 50, red, true);
             }
+            totalEnemyDmg -= static_cast<int>(totalEnemyDmg * (damageReduction));
+            if(totalEnemyDmg < 0) totalEnemyDmg = 0;
+            playerHealth -= totalEnemyDmg;
+            dynamicText("You took " + to_string(totalEnemyDmg) + " damage!", 50, red, true );
+        }else{
+            dynamicText("Enemies are binded, no attacks this turn.", 50, green, true);
+            chosenSkills[chosenMove - 1].isBinding = false; //reset binding
             continue;
+        }
+
+        if(numEnemies <= 0){
+            if(wave < 3){
+                dynamicText("You attempt to take a breather, but suddenly more appear!", 50, darkRed, true);
+                wave++;
+                continue;
+            }else{
+                //enter code to end event
+            }
         }
 
 
