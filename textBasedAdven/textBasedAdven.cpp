@@ -158,13 +158,13 @@ void useInventoryItems(vector<string> &plyrInventory, vector<MagicAbility> &play
         }
         else if (plyrInventory[itemNum - 1] == "Mysterious Item")
         {
-            cout << green << "You hold the item firmly in your hand, and as it melts in your palm, with your body aborbing its energy, " << blue << "New magic unlocked: Shield (reduces damage by 20%, only used during battles)" << reset << endl;
+            cout << green << "You hold the item firmly in your hand, and as it melts in your palm, with your body aborbing its energy, " << blue << "New magic unlocked: Shield (reduces damage by 40%, only used during battles)" << reset << endl;
             plyrInventory.erase(plyrInventory.begin() + itemNum - 1);
             playerMagics.push_back(MagicAbility(
                 "Shield",
                 "Reduces damage by 20 percent during battles",
                 0,
-                0.2,
+                0.4,
                 false,
                 true,
                 {{"Shield", 0, "Reduces damage by 20 percent during battles", false, false}}));
@@ -437,7 +437,6 @@ void bossBattle(
 
         if (boss.health <= 0)
         {
-            dynamicText(boss.name + " DEFEATED", 60, green, true);
             break;
         }
 
@@ -931,162 +930,176 @@ int main()
     //wave of enemies
     dynamicText("Suddenly, multiple creatures appear infront of you, faces full of revenge", 50, red, true);
     dynamicText("[Mysterious Creature]: HOW DARE YOU DEFEAT OUR LORD! MEET YOUR DOOM!", 100, darkRed, true);
-
-    while(true){
+    bool isWaveOver = false;
+    while(!isWaveOver){
         int wave = 1;
         int numEnemies;
         int eachEnemyHealth;
-        if(wave == 1){
-            numEnemies = 5;
-            eachEnemyHealth = 20;
-        }else if(wave == 2){
-            numEnemies = 10;
-            eachEnemyHealth = 35;
-        }else if(wave == 3){
-            numEnemies = 20;
-            eachEnemyHealth = 45;
-        }
         int damageToNextWave = numEnemies * eachEnemyHealth;
-        string in;
-        int chosenMove;
         int movelist = 0;
-        vector<Skill> chosenSkills;
-        //cant use the same move twice in a row
         vector<int> usedMoves;
-        cout << cyan << "-----------------INFO------------------" << endl;
-        cout << green << "Health: " << playerHealth << endl;
-        cout << yellow << "Wave: " << wave << endl;
-        cout << red << "Enemies remaining: " << numEnemies << endl;
-        cout << cyan << "------------MAGICS--------------" << endl;
-        for (const auto& magic : playerMagics) {
-            cout << magic.name << ":" << endl;
-            if (magic.damageReduction > 0.0) {
-                movelist++;
-                cout << "[" << movelist << "] " << "Damage reduction: " << magic.damageReduction << endl;
-                chosenSkills.push_back({magic.name, magic.damage, movelist, magic.damageReduction, 0, false});
+        while(true){
+            if(wave == 1){
+                numEnemies = 5;
+                eachEnemyHealth = 20;
+            }else if(wave == 2){
+                numEnemies = 10;
+                eachEnemyHealth = 35;
+            }else if(wave == 3){
+                numEnemies = 20;
+                eachEnemyHealth = 45;
             }
-            for(const auto& magicabil : magic.abilities){
-                movelist++;
-                cout << "[" << movelist << "] " << " " << magicabil.name << " (" << magicabil.damage << " damage): " << magicabil.description;
-                if(magicabil.isBinding) cout << " [Binding Ability]";
-                cout << endl;
-                chosenSkills.push_back({magicabil.name, magicabil.damage, movelist, magicabil.damageReduction, magicabil.removeHP, magicabil.isBinding});
+            
+            string in;
+            int chosenMove;
+            
+            vector<Skill> chosenSkills;
+            //cant use the same move twice in a row
+            
+            cout << cyan << "-----------------INFO------------------" << endl;
+            cout << green << "Health: " << playerHealth << endl;
+            cout << yellow << "Wave: " << wave << endl;
+            cout << red << "Enemies remaining: " << numEnemies << endl;
+            cout << cyan << "------------MAGICS--------------" << endl;
+            for (const auto& magic : playerMagics) {
+                cout << magic.name << ":" << endl;
+                if (magic.damageReduction > 0.0) {
+                    movelist++;
+                    cout << "[" << movelist << "] " << "Damage reduction: " << magic.damageReduction << endl;
+                    chosenSkills.push_back({magic.name, magic.damage, movelist, magic.damageReduction, 0, false});
+                }
+                for(const auto& magicabil : magic.abilities){
+                    movelist++;
+                    cout << "[" << movelist << "] " << " " << magicabil.name << " (" << magicabil.damage << " damage): " << magicabil.description;
+                    if(magicabil.isBinding) cout << " [Binding Ability]";
+                    cout << endl;
+                    chosenSkills.push_back({magicabil.name, magicabil.damage, movelist, magicabil.damageReduction, magicabil.removeHP, magicabil.isBinding});
+                }
+                if(magic.damage > 0) {
+                    movelist++;
+                    cout << "[" << movelist << "] " << "Damage: " << magic.damage << endl;
+                    chosenSkills.push_back({magic.name, magic.damage, movelist, magic.damageReduction, 0, false});
+                }
+                cout << " > Description: " << magic.description << endl;
             }
-            if(magic.damage > 0) {
-                movelist++;
-                cout << "[" << movelist << "] " << "Damage: " << magic.damage << endl;
-                chosenSkills.push_back({magic.name, magic.damage, movelist, magic.damageReduction, 0, false});
+            cout << blue << "------------WEAPONS--------------" << endl;
+            for(const auto &weapon : playerWeapons){
+                cout << cyan << weapon.name << endl;
+                for(const auto &ability : weapon.abilities){
+                    movelist++;
+                    cout << blue << "[" << movelist << "] " << ability.name << " " << ability.damage << " damage : " << ability.description << endl;
+                    chosenSkills.push_back({ability.name, ability.damage, movelist, 0.0, ability.removeHealth, false});
+                }
             }
-            cout << " > Description: " << magic.description << endl;
-        }
-        cout << blue << "------------WEAPONS--------------" << endl;
-        for(const auto &weapon : playerWeapons){
-            cout << cyan << weapon.name << endl;
-            for(const auto &ability : weapon.abilities){
-                movelist++;
-                cout << blue << "[" << movelist << "] " << ability.name << " " << ability.damage << " damage : " << ability.description << endl;
-                chosenSkills.push_back({ability.name, ability.damage, movelist, 0.0, ability.removeHealth, false});
-            }
-        }
-        getline(cin, in);
+            getline(cin, in);
 
-        try{
-            chosenMove = stoi(in);
+            try{
+                chosenMove = stoi(in);
 
-        }catch (const exception &e){
-            cout << "Invalid input, enter a valid number" << endl;
-            continue;
-        }
-        cout << red << "Chosen move: " << chosenSkills[chosenMove - 1].name << endl;
-        if(usedMoves.back() == chosenMove){
-            dynamicText("You cannot use the same move twice in a row!", 50, red, true);
-            continue;
-        }
-        usedMoves.push_back(chosenMove);
-
-        int damage = chosenSkills[chosenMove - 1].damage;
-        int damageReduction = 0;
-        damageReduction = chosenSkills[chosenMove - 1].damageReduction;
-
-        //check if the move removes health
-        if(chosenSkills[chosenMove - 1].healthRemove > 0){
-            if(playerHealth <= chosenSkills[chosenMove - 1].healthRemove){
-                playerHealth = 0;
-                cout << darkRed << "idiot u had less health than the move takes away, u died lol" << reset << endl;
-                isDead = true;
-                break;
-            }else{
-                playerHealth -= chosenSkills[chosenMove - 1].healthRemove;
-            }
-        }
-
-        //damage the enemies
-        if(damage > 0){
-            int enemiesKilled = damage / eachEnemyHealth;
-            dynamicText("Your move killed " + to_string(enemiesKilled) + " enemies!", 50, red, true);
-            numEnemies -= enemiesKilled;
-        }
-
-        vector<string> enemyVoicelines = {
-            "[Mysterious Creature]: FOR EXODIUS!!",
-            "[Mysterious Creature]: ugh!",
-            "[Mysterious Creature]: GRAAAHHH!",
-            "[Mysterious Creature]: ARRGGHH!",
-            "[Mysterious Creature]: YOU WILL PAY FOR THIS!",
-        };
-
-        int vcIndex = rand() % enemyVoicelines.size();
-        dynamicText(enemyVoicelines[vcIndex], 65, darkRed, true);
-
-        if(damageReduction > 0){
-            dynamicText("You brace yourself...", 50, cyan, true);
-        }
-        //enemies attack
-        struct enemyAttack{
-            int id;
-            int dmg;
-            string desc;
-        };
-        vector<enemyAttack> enemyAttacks = {
-            {1, 10, "An enemy does a switch punch to your face, -10 hp"},
-            {2, 15, "An enemy does a swift kick to your gut, -15 hp"},
-            {3, 20, "An enemy does a heavy slam to your back, -20 hp"},
-            {4, 25, "A group of enemies tackle you and pin you on the ground, -25 hp"}
-        };
-
-        //first check if the user used a binding move
-        bool isBinded = chosenSkills[chosenMove - 1].isBinding;
-        if(!isBinded){
-            int totalEnemyDmg = 0;
-            for(int i = 0; i < numEnemies; i++){
-                int attackIndex = rand() % enemyAttacks.size();
-                totalEnemyDmg += enemyAttacks[attackIndex].dmg;
-                dynamicText(enemyAttacks[attackIndex].desc, 50, red, true);
-            }
-            totalEnemyDmg -= static_cast<int>(totalEnemyDmg * (damageReduction));
-            if(totalEnemyDmg < 0) totalEnemyDmg = 0;
-            playerHealth -= totalEnemyDmg;
-            dynamicText("You took " + to_string(totalEnemyDmg) + " damage!", 50, red, true );
-        }else{
-            dynamicText("Enemies are binded, no attacks this turn.", 50, green, true);
-            chosenSkills[chosenMove - 1].isBinding = false; //reset binding
-            continue;
-        }
-
-        if(numEnemies <= 0){
-            if(wave < 3){
-                dynamicText("You attempt to take a breather, but suddenly more appear!", 50, darkRed, true);
-                wave++;
+            }catch (const exception &e){
+                cout << "Invalid input, enter a valid number" << endl;
                 continue;
+            }
+            cout << red << "Chosen move: " << chosenSkills[chosenMove - 1].name << endl;
+            usedMoves.push_back(chosenMove);
+            for(int i = 0; i < usedMoves.size(); i++){ //debugging start
+                cout << usedMoves[i] << " ";
+            }
+            cout << endl;
+            cout << usedMoves[usedMoves.size()] << endl;
+            cout << usedMoves[usedMoves.size() - 1] << endl; //debugging end
+            if(usedMoves[usedMoves.size() - 2] == chosenMove && usedMoves.size() > 1){
+                dynamicText("You cannot use the same move twice in a row!", 50, red, true);
+                usedMoves.pop_back();
+                continue;
+            }
+            /*if(usedMoves.back() == chosenMove){
+                dynamicText("You cannot use the same move twice in a row!", 50, red, true);
+                continue;
+            }
+            usedMoves.push_back(chosenMove); */ //broken code --- intended purpose -> cant use same move twice in a row
+
+            int damage = chosenSkills[chosenMove - 1].damage;
+            int damageReduction = 0;
+            damageReduction = chosenSkills[chosenMove - 1].damageReduction;
+
+            //check if the move removes health
+            if(chosenSkills[chosenMove - 1].healthRemove > 0){
+                if(playerHealth <= chosenSkills[chosenMove - 1].healthRemove){
+                    playerHealth = 0;
+                    cout << darkRed << "idiot u had less health than the move takes away, u died lol" << reset << endl;
+                    isDead = true;
+                    break;
+                }else{
+                    playerHealth -= chosenSkills[chosenMove - 1].healthRemove;
+                }
+            }
+
+            //damage the enemies
+            if(damage > 0){
+                int enemiesKilled = damage / eachEnemyHealth;
+                dynamicText("Your move killed " + to_string(enemiesKilled) + " enemies!", 50, red, true);
+                numEnemies -= enemiesKilled;
+            }
+
+            vector<string> enemyVoicelines = {
+                "[Mysterious Creature]: FOR EXODIUS!!",
+                "[Mysterious Creature]: ugh!",
+                "[Mysterious Creature]: GRAAAHHH!",
+                "[Mysterious Creature]: ARRGGHH!",
+                "[Mysterious Creature]: YOU WILL PAY FOR THIS!",
+            };
+
+            int vcIndex = rand() % enemyVoicelines.size();
+            dynamicText(enemyVoicelines[vcIndex], 65, darkRed, true);
+
+            if(damageReduction > 0){
+                dynamicText("You brace yourself...", 50, cyan, true);
+            }
+            //enemies attack
+            struct enemyAttack{
+                int id;
+                int dmg;
+                string desc;
+            };
+            vector<enemyAttack> enemyAttacks = {
+                {1, 10, "An enemy does a switch punch to your face, -10 hp"},
+                {2, 15, "An enemy does a swift kick to your gut, -15 hp"},
+                {3, 20, "An enemy does a heavy slam to your back, -20 hp"},
+                {4, 25, "A group of enemies tackle you and pin you on the ground, -25 hp"}
+            };
+
+            //first check if the user used a binding move
+            bool isBinded = chosenSkills[chosenMove - 1].isBinding;
+            if(!isBinded){
+                int totalEnemyDmg = 0;
+                for(int i = 0; i < numEnemies; i++){
+                    int attackIndex = rand() % enemyAttacks.size();
+                    totalEnemyDmg += enemyAttacks[attackIndex].dmg;
+                    dynamicText(enemyAttacks[attackIndex].desc, 50, red, true);
+                }
+                totalEnemyDmg -= static_cast<int>(totalEnemyDmg * (damageReduction));
+                if(totalEnemyDmg < 0) totalEnemyDmg = 0;
+                playerHealth -= totalEnemyDmg;
+                dynamicText("You took " + to_string(totalEnemyDmg) + " damage!", 50, red, true );
             }else{
-                //enter code to end event
+                dynamicText("Enemies are binded, no attacks this turn.", 50, green, true);
+                chosenSkills[chosenMove - 1].isBinding = false; //reset binding
+                continue;
+            }
+
+            if(numEnemies <= 0){
+                if(wave < 3){
+                    dynamicText("You attempt to take a breather, but suddenly more appear!", 50, darkRed, true);
+                    wave++;
+                    continue;
+                }else if(wave > 3){
+                    isWaveOver = true;
+                    break;
+                }
             }
         }
-
-
-
     }
-
 
     gameRunning = false;  // Tell the monitor thread to stop
     monitorThread.join(); // Wait for it to finish
