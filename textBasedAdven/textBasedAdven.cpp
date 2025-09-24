@@ -162,12 +162,12 @@ void useInventoryItems(vector<string> &plyrInventory, vector<MagicAbility> &play
             plyrInventory.erase(plyrInventory.begin() + itemNum - 1);
             playerMagics.push_back(MagicAbility(
                 "Shield",
-                "Reduces damage by 20 percent during battles",
+                "Reduces damage by 40 percent during battles",
                 0,
                 0.4,
                 false,
                 true,
-                {{"Shield", 0, "Reduces damage by 20 percent during battles", false, false}}));
+                {{"Shield", 0, "Reduces damage by 40 percent during battles", false, false}}));
         }
     }
 }
@@ -193,15 +193,19 @@ vector<string> preBattleSequence(vector<string> &plyrInventory, vector<MagicAbil
             cout << red << "Enter items to use during battle (say exit to stop selecting)" << reset << endl;
             string useItem;
             getline(cin, useItem);
-            if (useItem == "exit")
-            {
+            if (useItem == "exit"){
                 cout << cyan << "You decide not to use any more items." << reset << endl;
                 break;
             }
-            else
-            {
+            else{
                 // convert to int and use item
-                int itemNum = stoi(useItem);
+                int itemNum;
+                try{
+                    itemNum = stoi(useItem);
+                }catch(const exception &e){
+                    cout << red << "Invalid input, enter a valid number or enter 'exit' to exit the prompt" << reset << endl;
+                    continue;
+                }
                 if (itemNum < 1 || itemNum > static_cast<int>(plyrInventory.size()))
                 {
                     cout << red << "Invalid item number." << reset << endl;
@@ -248,7 +252,7 @@ vector<string> preBattleSequence(vector<string> &plyrInventory, vector<MagicAbil
                     }
                     if (alreadyInBattle)
                     {
-                        cout << red << "You can only use one" << cyan << "Sword of Destiny" << red << "during battle" << reset << endl;
+                        cout << red << "You can only use one " << cyan << "Sword of Destiny" << red << " during battle" << reset << endl;
                         continue;
                     }
                     battleItems.push_back("Sword of Destiny");
@@ -915,7 +919,7 @@ int main()
     dynamicText("Armor of Exodius added to inventory", 25, blue, true);
     dynamicText("A chest appears infront of you while you begin to leave, inside of it appears a key... maybe it unlocks the other door?", 75, yellow, true);
     plyrInventory.push_back("Old Key");
-    dynamicText("Old Key added to inventory", 25, yellow, true);
+    dynamicText("Old Key added to inventory", 25, cyan, true);
     dynamicText("You walk back into the hallway, you face against the locked wooden door and slide the key inside the keyhole, it struggles at first but then unlocks with a loud click", 75, yellow, true);
     //remove key from inv
     auto keyIt = find(plyrInventory.begin(), plyrInventory.end(), "Old Key");
@@ -936,7 +940,6 @@ int main()
         int numEnemies;
         int eachEnemyHealth;
         int damageToNextWave = numEnemies * eachEnemyHealth;
-        int movelist = 0;
         vector<int> usedMoves;
         while(true){
             if(wave == 1){
@@ -952,7 +955,7 @@ int main()
             
             string in;
             int chosenMove;
-            
+            int movelist = 0;
             vector<Skill> chosenSkills;
             //cant use the same move twice in a row
             
@@ -1001,18 +1004,30 @@ int main()
                 continue;
             }
             cout << red << "Chosen move: " << chosenSkills[chosenMove - 1].name << endl;
-            usedMoves.push_back(chosenMove);
-            for(int i = 0; i < usedMoves.size(); i++){ //debugging start
+            /*for(int i = 0; i < usedMoves.size(); i++){ //debugging start
                 cout << usedMoves[i] << " ";
             }
             cout << endl;
             cout << usedMoves[usedMoves.size()] << endl;
-            cout << usedMoves[usedMoves.size() - 1] << endl; //debugging end
-            if(usedMoves[usedMoves.size() - 2] == chosenMove && usedMoves.size() > 1){
+            cout << usedMoves[usedMoves.size() - 1] << endl; */ //debugging end */
+
+            if(usedMoves.size() > 1){//check if its not empty
+                if(usedMoves.back() == chosenMove or usedMoves[usedMoves.size() - 1] == chosenMove){
+                    dynamicText("You cannot use the same move twice in a row!", 50, red, true);
+                    usedMoves.pop_back();
+                    continue;
+                }
+            }
+
+            usedMoves.push_back(chosenMove);
+
+            /*if(usedMoves[usedMoves.size() - 2] == chosenMove && usedMoves.size() > 1){
                 dynamicText("You cannot use the same move twice in a row!", 50, red, true);
                 usedMoves.pop_back();
                 continue;
-            }
+            }*/ //--------> follows main principle, attempting to improve
+
+
             /*if(usedMoves.back() == chosenMove){
                 dynamicText("You cannot use the same move twice in a row!", 50, red, true);
                 continue;
