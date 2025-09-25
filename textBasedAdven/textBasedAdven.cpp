@@ -190,7 +190,7 @@ vector<string> preBattleSequence(vector<string> &plyrInventory, vector<MagicAbil
         vector<string> battleItems;
         while (true)
         { // for ITEMS, next while loop is for MAGIC
-            cout << red << "Enter items to use during battle (say exit to stop selecting)" << reset << endl;
+            cout << red << "Enter items to use during battle (say exit to stop selecting or continue to boss battle)" << reset << endl;
             string useItem;
             getline(cin, useItem);
             if (useItem == "exit"){
@@ -935,7 +935,7 @@ int main()
     dynamicText("Suddenly, multiple creatures appear infront of you, faces full of revenge", 50, red, true);
     dynamicText("[Mysterious Creature]: HOW DARE YOU DEFEAT OUR LORD! MEET YOUR DOOM!", 100, darkRed, true);
     bool isWaveOver = false;
-    while(!isWaveOver){
+    while(!isWaveOver){ //WAVE LOOP FOR FUTURE REFERENCES
         int wave = 1;
         int numEnemies;
         int eachEnemyHealth;
@@ -1012,7 +1012,9 @@ int main()
             cout << usedMoves[usedMoves.size()] << endl;
             cout << usedMoves[usedMoves.size() - 1] << endl; */ //debugging end */
 
-            //cout << "DEBUG: USEDMOVES.BACK() -- " << usedMoves.back() << endl;
+            if(usedMoves.size() > 1){
+                cout << "DEBUG: USEDMOVES.BACK() -- " << usedMoves.back() << endl;
+            }
 
             if(usedMoves.size() > 1){//check if its not empty
                 if(usedMoves.back() == chosenMove or usedMoves[usedMoves.size() - 1] == chosenMove){
@@ -1049,8 +1051,8 @@ int main()
             //check if the move removes health
             if(chosenSkills[chosenMove - 1].healthRemove > 0){
                 if(playerHealth <= chosenSkills[chosenMove - 1].healthRemove){
-                    playerHealth = 0;
                     cout << darkRed << "idiot u had less health than the move takes away, u died lol" << reset << endl;
+                    playerHealth = 0;
                     isDead = true;
                     break;
                 }else{
