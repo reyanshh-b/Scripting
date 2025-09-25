@@ -383,7 +383,7 @@ void bossBattle(
         }
         
 
-        cout << green << "Enter a move you want to use: " << endl;
+        cout << green << "Enter the move id (number before the move) you want to use: " << endl;
 
         getline(cin, input);
         try
@@ -1004,12 +1004,15 @@ int main()
                 continue;
             }
             cout << red << "Chosen move: " << chosenSkills[chosenMove - 1].name << endl;
+            cout << "DEBUG: DMG -- " << chosenSkills[chosenMove - 1].damage << endl;
             /*for(int i = 0; i < usedMoves.size(); i++){ //debugging start
                 cout << usedMoves[i] << " ";
             }
             cout << endl;
             cout << usedMoves[usedMoves.size()] << endl;
             cout << usedMoves[usedMoves.size() - 1] << endl; */ //debugging end */
+
+            //cout << "DEBUG: USEDMOVES.BACK() -- " << usedMoves.back() << endl;
 
             if(usedMoves.size() > 1){//check if its not empty
                 if(usedMoves.back() == chosenMove or usedMoves[usedMoves.size() - 1] == chosenMove){
@@ -1020,6 +1023,11 @@ int main()
             }
 
             usedMoves.push_back(chosenMove);
+            cout << "DEBUG: USED MOVE LIST-- ";
+            for(auto i = 0; i < usedMoves.size(); i++){
+                cout << usedMoves[i] << " ";
+            }
+            cout << endl;
 
             /*if(usedMoves[usedMoves.size() - 2] == chosenMove && usedMoves.size() > 1){
                 dynamicText("You cannot use the same move twice in a row!", 50, red, true);
@@ -1057,6 +1065,17 @@ int main()
                 numEnemies -= enemiesKilled;
             }
 
+            if(numEnemies <= 0){
+                if(wave < 3){
+                    dynamicText("You attempt to take a breather, but suddenly more appear!", 50, darkRed, true);
+                    wave++;
+                    continue;
+                }else if(wave > 3){
+                    isWaveOver = true;
+                    break;
+                }
+            }
+
             vector<string> enemyVoicelines = {
                 "[Mysterious Creature]: FOR EXODIUS!!",
                 "[Mysterious Creature]: ugh!",
@@ -1077,11 +1096,13 @@ int main()
                 int dmg;
                 string desc;
             };
+
+            cout << "DEBUG: num enemi is " << numEnemies << endl;
             vector<enemyAttack> enemyAttacks = {
-                {1, 10, "An enemy does a switch punch to your face, -10 hp"},
-                {2, 15, "An enemy does a swift kick to your gut, -15 hp"},
-                {3, 20, "An enemy does a heavy slam to your back, -20 hp"},
-                {4, 25, "A group of enemies tackle you and pin you on the ground, -25 hp"}
+                {1, 50 / numEnemies, "An enemy does a switch punch to your face -" + to_string( 50 / numEnemies) + " hp"},
+                {2, 55 / numEnemies, "An enemy does a swift kick to your gut -" + to_string( 55 / numEnemies) + " hp"},
+                {3, 65 / numEnemies, "An enemy does a heavy slam to your back -" + to_string( 65 / numEnemies) + " hp"},
+                {4, 70 / numEnemies, "A group of enemies tackle you and pin you on the ground -" + to_string( 70 / numEnemies) + " hp"}
             };
 
             //first check if the user used a binding move
