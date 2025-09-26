@@ -8,6 +8,7 @@
 #include <cctype>
 #include <vector>
 #include <ctime>
+#include <cmath>
 using namespace std;
 struct BossAttack
 {
@@ -947,10 +948,10 @@ int main()
                 eachEnemyHealth = 20;
             }else if(wave == 2){
                 numEnemies = 10;
-                eachEnemyHealth = 35;
+                eachEnemyHealth = 25;
             }else if(wave == 3){
                 numEnemies = 20;
-                eachEnemyHealth = 45;
+                eachEnemyHealth = 27;
             }
             
             string in;
@@ -1003,6 +1004,11 @@ int main()
                 cout << "Invalid input, enter a valid number" << endl;
                 continue;
             }
+            //if chosenmove id is out of range
+            if(chosenMove < 1 || chosenMove > chosenSkills.size()){
+                cout << "Invalid move id, enter a valid number" << endl;
+                continue;
+            }
             cout << red << "Chosen move: " << chosenSkills[chosenMove - 1].name << endl;
             cout << "DEBUG: DMG -- " << chosenSkills[chosenMove - 1].damage << endl;
             /*for(int i = 0; i < usedMoves.size(); i++){ //debugging start
@@ -1012,14 +1018,16 @@ int main()
             cout << usedMoves[usedMoves.size()] << endl;
             cout << usedMoves[usedMoves.size() - 1] << endl; */ //debugging end */
 
-            if(usedMoves.size() > 1){
+            //debugging
+            cout << "DEBUG: USEDMOVES.SIZE() -- " << usedMoves.size() << endl;
+
+            if(usedMoves.size() >= 1){
                 cout << "DEBUG: USEDMOVES.BACK() -- " << usedMoves.back() << endl;
             }
-
-            if(usedMoves.size() > 1){//check if its not empty
+            
+            if(usedMoves.size() >= 1){//check if its not empty
                 if(usedMoves.back() == chosenMove or usedMoves[usedMoves.size() - 1] == chosenMove){
                     dynamicText("You cannot use the same move twice in a row!", 50, red, true);
-                    usedMoves.pop_back();
                     continue;
                 }
             }
@@ -1063,7 +1071,7 @@ int main()
             //damage the enemies
             if(damage > 0){
                 int enemiesKilled = damage / eachEnemyHealth;
-                dynamicText("Your move killed " + to_string(enemiesKilled) + " enemies!", 50, red, true);
+                dynamicText("Your move killed " + to_string(enemiesKilled) + " enemie(s)!", 50, red, true);
                 numEnemies -= enemiesKilled;
             }
 
@@ -1111,7 +1119,7 @@ int main()
             bool isBinded = chosenSkills[chosenMove - 1].isBinding;
             if(!isBinded){
                 int totalEnemyDmg = 0;
-                for(int i = 0; i < numEnemies; i++){
+                for(int i = 0; i < round(numEnemies * 0.6); i++){ //if this block breaks, change to floor instead of round, otherwise remove the round functionality completely.
                     int attackIndex = rand() % enemyAttacks.size();
                     totalEnemyDmg += enemyAttacks[attackIndex].dmg;
                     dynamicText(enemyAttacks[attackIndex].desc, 50, red, true);
