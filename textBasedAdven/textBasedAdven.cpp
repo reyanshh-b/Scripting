@@ -1109,10 +1109,10 @@ int main()
 
             cout << "DEBUG: num enemi is " << numEnemies << endl;
             vector<enemyAttack> enemyAttacks = {
-                {1, 50 / numEnemies, "An enemy does a switch punch to your face -" + to_string( 50 / numEnemies) + " hp"},
-                {2, 55 / numEnemies, "An enemy does a swift kick to your gut -" + to_string( 55 / numEnemies) + " hp"},
-                {3, 65 / numEnemies, "An enemy does a heavy slam to your back -" + to_string( 65 / numEnemies) + " hp"},
-                {4, 70 / numEnemies, "A group of enemies tackle you and pin you on the ground -" + to_string( 70 / numEnemies) + " hp"}
+                {1, 25 / numEnemies, "An enemy does a switch punch to your face -" + to_string( 25 / numEnemies) + " hp"},
+                {2, 30 / numEnemies, "An enemy does a swift kick to your gut -" + to_string( 30 / numEnemies) + " hp"},
+                {3, 35 / numEnemies, "An enemy does a heavy slam to your back -" + to_string( 35 / numEnemies) + " hp"},
+                {4, 40 / numEnemies, "A group of enemies tackle you and pin you on the ground -" + to_string( 40 / numEnemies) + " hp"}
             };
 
             //if user used binding move
