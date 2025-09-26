@@ -1115,7 +1115,7 @@ int main()
                 {4, 70 / numEnemies, "A group of enemies tackle you and pin you on the ground -" + to_string( 70 / numEnemies) + " hp"}
             };
 
-            //first check if the user used a binding move
+            //if user used binding move
             bool isBinded = chosenSkills[chosenMove - 1].isBinding;
             if(!isBinded){
                 int totalEnemyDmg = 0;
