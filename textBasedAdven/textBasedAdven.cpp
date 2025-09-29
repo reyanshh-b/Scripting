@@ -873,7 +873,7 @@ int main()
     // wow that alot of code for a boss battle
     dynamicText("ALL HEALTH RESTORED - ONE TIME EVENT, NO HEALTH RESTORATION AFTER BOSS BATTLES IN THE FUTURE", 25, green, true);
     playerHealth = 100;
-    dynamicText("As Exodius falls to the ground, hand cletching againts his chest, he looks up at you with final words", 65, red, true);
+    dynamicText("As Exodius falls to the ground, hand clenching againts his chest, he looks up at you with final words", 65, red, true);
     dynamicText("[Lord Exodius]: Heh... here I thought I was immortal... I thought I was.. a god...", 75, darkRed, true);
     dynamicText("With that, he takes his last breath and falls silent", 75, red, true);
     dynamicText("His remains disintegrate into a pile of dust, leaving behind a glowing sword with a green gem in its hilt, a dark orb carrying his magic essence, and his armor", 75, yellow, true);
@@ -938,22 +938,12 @@ int main()
     bool isWaveOver = false;
     while(!isWaveOver){ //WAVE LOOP FOR FUTURE REFERENCES
         int wave = 1;
-        int numEnemies;
-        int eachEnemyHealth;
+        int numEnemies = 5;
+        int eachEnemyHealth = 20;
         int damageToNextWave = numEnemies * eachEnemyHealth;
         vector<int> usedMoves;
         while(true){
-            if(wave == 1){
-                numEnemies = 5;
-                eachEnemyHealth = 20;
-            }else if(wave == 2){
-                numEnemies = 10;
-                eachEnemyHealth = 25;
-            }else if(wave == 3){
-                numEnemies = 20;
-                eachEnemyHealth = 27;
-            }
-            
+            cout << "DEBUG: WAVE AND NUM ENEMY (X,Y)" << wave << "," << numEnemies << endl;
             string in;
             int chosenMove;
             int movelist = 0;
@@ -1138,6 +1128,17 @@ int main()
                 if(wave < 3){
                     dynamicText("You attempt to take a breather, but suddenly more appear!", 50, darkRed, true);
                     wave++;
+                    cout << "DEBUG: WAVE -- " << wave << endl;
+                    if(wave == 2){
+                        cout << "DEBUG: WAVE 2 INIT" << endl;
+                        numEnemies = 10;
+                        eachEnemyHealth = 25;
+                    }else if(wave == 3){
+                        cout << "DEBUG: WAVE 3 INIT" << endl;
+                        numEnemies = 20;
+                        eachEnemyHealth = 27;
+                    }
+                    cout << "DEBUG: WAVE AND ENEMY (X, Y)" << wave << ", " << numEnemies << endl;
                     continue;
                 }else if(wave > 3){
                     isWaveOver = true;
