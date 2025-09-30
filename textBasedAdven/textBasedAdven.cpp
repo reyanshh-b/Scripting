@@ -884,9 +884,9 @@ int main()
         "Sword obtained from the remains of Lord Exodius, radiating his power when wielded",
         40,
         {
-            {"Midnight Cleave", 80, "A powerful cleave that channels the dark energy of Exodius, takes away 15 hp to use", 15},
+            {"Midnight Cleave", 100, "A powerful cleave that channels the dark energy of Exodius, takes away 15 hp to use", 15},
             {"Shadow Strike", 60, "A swift strike that harnesses the shadows, dealing heavy damage", 0},
-            {"Dark Wave", 100, "Unleash a wave of dark energy that damages all enemies, takes away 20 hp to use", 20}
+            {"Dark Wave", 150, "Unleash a wave of dark energy that damages all enemies, takes away 25 hp to use", 25}
         }
     ));
 
@@ -944,7 +944,7 @@ int main()
     while(!isWaveOver){ //WAVE LOOP FOR FUTURE REFERENCES
 
         while(true){
-            cout << "DEBUG: WAVE AND NUM ENEMY (X,Y)" << wave << "," << numEnemies << endl;
+            //cout << "DEBUG: WAVE AND NUM ENEMY (X,Y)" << wave << "," << numEnemies << endl;
             string in;
             int chosenMove;
             int movelist = 0;
@@ -1001,7 +1001,7 @@ int main()
                 continue;
             }
             cout << red << "Chosen move: " << chosenSkills[chosenMove - 1].name << endl;
-            cout << "DEBUG: DMG -- " << chosenSkills[chosenMove - 1].damage << endl;
+            //cout << "DEBUG: DMG -- " << chosenSkills[chosenMove - 1].damage << endl;
             /*for(int i = 0; i < usedMoves.size(); i++){ //debugging start
                 cout << usedMoves[i] << " ";
             }
@@ -1010,10 +1010,10 @@ int main()
             cout << usedMoves[usedMoves.size() - 1] << endl; */ //debugging end */
 
             //debugging
-            cout << "DEBUG: USEDMOVES.SIZE() -- " << usedMoves.size() << endl;
+            //cout << "DEBUG: USEDMOVES.SIZE() -- " << usedMoves.size() << endl;
 
             if(usedMoves.size() >= 1){
-                cout << "DEBUG: USEDMOVES.BACK() -- " << usedMoves.back() << endl;
+                //cout << "DEBUG: USEDMOVES.BACK() -- " << usedMoves.back() << endl;
             }
             
             if(usedMoves.size() >= 1){//check if its not empty
@@ -1024,7 +1024,7 @@ int main()
             }
 
             usedMoves.push_back(chosenMove);
-            cout << "DEBUG: USED MOVE LIST-- ";
+            //cout << "DEBUG: USED MOVE LIST-- ";
             for(auto i = 0; i < usedMoves.size(); i++){
                 cout << usedMoves[i] << " ";
             }
@@ -1062,6 +1062,7 @@ int main()
             //damage the enemies
             if(damage > 0){
                 int enemiesKilled = damage / eachEnemyHealth;
+                if(enemiesKilled > numEnemies) enemiesKilled = numEnemies;
                 dynamicText("Your move killed " + to_string(enemiesKilled) + " enemie(s)!", 50, red, true);
                 numEnemies -= enemiesKilled;
             }
@@ -1089,12 +1090,12 @@ int main()
                     string desc;
                 };
 
-                cout << "DEBUG: num enemi is " << numEnemies << endl;
+                //cout << "DEBUG: num enemi is " << numEnemies << endl;
                 vector<enemyAttack> enemyAttacks = {
-                    {1, 25 / numEnemies, "An enemy does a switch punch to your face -" + to_string( 25 / numEnemies) + " hp"},
-                    {2, 30 / numEnemies, "An enemy does a swift kick to your gut -" + to_string( 30 / numEnemies) + " hp"},
-                    {3, 35 / numEnemies, "An enemy does a heavy slam to your back -" + to_string( 35 / numEnemies) + " hp"},
-                    {4, 40 / numEnemies, "A group of enemies tackle you and pin you on the ground -" + to_string( 40 / numEnemies) + " hp"}
+                    {1, 15 / numEnemies, "An enemy does a switch punch to your face -" + to_string( 25 / numEnemies) + " hp"},
+                    {2, 20 / numEnemies, "An enemy does a swift kick to your gut -" + to_string( 30 / numEnemies) + " hp"},
+                    {3, 25 / numEnemies, "An enemy does a heavy slam to your back -" + to_string( 35 / numEnemies) + " hp"},
+                    {4, 20 / numEnemies, "A group of enemies tackle you and pin you on the ground -" + to_string( 40 / numEnemies) + " hp"}
                 };
 
                 //if user used binding move
@@ -1127,13 +1128,13 @@ int main()
                     dynamicText("You attempt to catch your breath, but more enemies appear!", 50, red, true);
                     wave++;
                     
-                    cout << "DEBUG: STARTING WAVE INIT" << endl;
+                    //cout << "DEBUG: STARTING WAVE INIT" << endl;
 
                     if(wave == 2){
                         numEnemies = 10;
                         eachEnemyHealth = 25;
                     }else if (wave == 3){
-                        numEnemies = 20;
+                        numEnemies = 15;
                         eachEnemyHealth = 22;
                     }
                     continue;
