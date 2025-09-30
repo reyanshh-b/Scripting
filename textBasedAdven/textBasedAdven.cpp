@@ -936,12 +936,13 @@ int main()
     dynamicText("Suddenly, multiple creatures appear infront of you, faces full of revenge", 50, red, true);
     dynamicText("[Mysterious Creature]: HOW DARE YOU DEFEAT OUR LORD! MEET YOUR DOOM!", 100, darkRed, true);
     bool isWaveOver = false;
+    int wave = 1;
+    int numEnemies = 5;
+    int eachEnemyHealth = 20;
+    int damageToNextWave = numEnemies * eachEnemyHealth;
+    vector<int> usedMoves;
     while(!isWaveOver){ //WAVE LOOP FOR FUTURE REFERENCES
-        int wave = 1;
-        int numEnemies = 5;
-        int eachEnemyHealth = 20;
-        int damageToNextWave = numEnemies * eachEnemyHealth;
-        vector<int> usedMoves;
+
         while(true){
             cout << "DEBUG: WAVE AND NUM ENEMY (X,Y)" << wave << "," << numEnemies << endl;
             string in;
@@ -1065,82 +1066,78 @@ int main()
                 numEnemies -= enemiesKilled;
             }
 
-            if(numEnemies <= 0){
-                if(wave < 3){
-                    dynamicText("You attempt to take a breather, but suddenly more appear!", 50, darkRed, true);
-                    wave++;
+            
+            if(numEnemies > 0){
+                vector<string> enemyVoicelines = {
+                    "[Mysterious Creature]: FOR EXODIUS!!",
+                    "[Mysterious Creature]: ugh!",
+                    "[Mysterious Creature]: GRAAAHHH!",
+                    "[Mysterious Creature]: ARRGGHH!",
+                    "[Mysterious Creature]: YOU WILL PAY FOR THIS!",
+                };
+
+                int vcIndex = rand() % enemyVoicelines.size();
+                dynamicText(enemyVoicelines[vcIndex], 65, darkRed, true);
+
+                if(damageReduction > 0){
+                    dynamicText("You brace yourself...", 50, cyan, true);
+                }
+                //enemies attack
+                struct enemyAttack{
+                    int id;
+                    int dmg;
+                    string desc;
+                };
+
+                cout << "DEBUG: num enemi is " << numEnemies << endl;
+                vector<enemyAttack> enemyAttacks = {
+                    {1, 25 / numEnemies, "An enemy does a switch punch to your face -" + to_string( 25 / numEnemies) + " hp"},
+                    {2, 30 / numEnemies, "An enemy does a swift kick to your gut -" + to_string( 30 / numEnemies) + " hp"},
+                    {3, 35 / numEnemies, "An enemy does a heavy slam to your back -" + to_string( 35 / numEnemies) + " hp"},
+                    {4, 40 / numEnemies, "A group of enemies tackle you and pin you on the ground -" + to_string( 40 / numEnemies) + " hp"}
+                };
+
+                //if user used binding move
+                bool isBinded = chosenSkills[chosenMove - 1].isBinding;
+                if(!isBinded){
+                    int totalEnemyDmg = 0;
+                    for(int i = 0; i < round(numEnemies * 0.6); i++){ //if this block breaks, change to floor instead of round, otherwise remove the round functionality completely.
+                        int attackIndex = rand() % enemyAttacks.size();
+                        totalEnemyDmg += enemyAttacks[attackIndex].dmg;
+                        dynamicText(enemyAttacks[attackIndex].desc, 50, red, true);
+                    }
+                    totalEnemyDmg -= static_cast<int>(totalEnemyDmg * (damageReduction));
+                    if(totalEnemyDmg < 0) totalEnemyDmg = 0;
+                    playerHealth -= totalEnemyDmg;
+                    dynamicText("You took " + to_string(totalEnemyDmg) + " damage!", 50, red, true );
+                }else{
+                    dynamicText("Enemies are binded, no attacks this turn.", 50, green, true);
+                    chosenSkills[chosenMove - 1].isBinding = false; //reset binding
                     continue;
-                }else if(wave > 3){
-                    isWaveOver = true;
-                    break;
                 }
             }
-
-            vector<string> enemyVoicelines = {
-                "[Mysterious Creature]: FOR EXODIUS!!",
-                "[Mysterious Creature]: ugh!",
-                "[Mysterious Creature]: GRAAAHHH!",
-                "[Mysterious Creature]: ARRGGHH!",
-                "[Mysterious Creature]: YOU WILL PAY FOR THIS!",
-            };
-
-            int vcIndex = rand() % enemyVoicelines.size();
-            dynamicText(enemyVoicelines[vcIndex], 65, darkRed, true);
-
-            if(damageReduction > 0){
-                dynamicText("You brace yourself...", 50, cyan, true);
-            }
-            //enemies attack
-            struct enemyAttack{
-                int id;
-                int dmg;
-                string desc;
-            };
-
-            cout << "DEBUG: num enemi is " << numEnemies << endl;
-            vector<enemyAttack> enemyAttacks = {
-                {1, 25 / numEnemies, "An enemy does a switch punch to your face -" + to_string( 25 / numEnemies) + " hp"},
-                {2, 30 / numEnemies, "An enemy does a swift kick to your gut -" + to_string( 30 / numEnemies) + " hp"},
-                {3, 35 / numEnemies, "An enemy does a heavy slam to your back -" + to_string( 35 / numEnemies) + " hp"},
-                {4, 40 / numEnemies, "A group of enemies tackle you and pin you on the ground -" + to_string( 40 / numEnemies) + " hp"}
-            };
-
-            //if user used binding move
-            bool isBinded = chosenSkills[chosenMove - 1].isBinding;
-            if(!isBinded){
-                int totalEnemyDmg = 0;
-                for(int i = 0; i < round(numEnemies * 0.6); i++){ //if this block breaks, change to floor instead of round, otherwise remove the round functionality completely.
-                    int attackIndex = rand() % enemyAttacks.size();
-                    totalEnemyDmg += enemyAttacks[attackIndex].dmg;
-                    dynamicText(enemyAttacks[attackIndex].desc, 50, red, true);
-                }
-                totalEnemyDmg -= static_cast<int>(totalEnemyDmg * (damageReduction));
-                if(totalEnemyDmg < 0) totalEnemyDmg = 0;
-                playerHealth -= totalEnemyDmg;
-                dynamicText("You took " + to_string(totalEnemyDmg) + " damage!", 50, red, true );
-            }else{
-                dynamicText("Enemies are binded, no attacks this turn.", 50, green, true);
-                chosenSkills[chosenMove - 1].isBinding = false; //reset binding
-                continue;
+            
+            if(playerHealth <= 0){
+                isDead = true;
+                break;
             }
 
             if(numEnemies <= 0){
                 if(wave < 3){
-                    dynamicText("You attempt to take a breather, but suddenly more appear!", 50, darkRed, true);
+                    dynamicText("You attempt to catch your breath, but more enemies appear!", 50, red, true);
                     wave++;
-                    cout << "DEBUG: WAVE -- " << wave << endl;
+                    
+                    cout << "DEBUG: STARTING WAVE INIT" << endl;
+
                     if(wave == 2){
-                        cout << "DEBUG: WAVE 2 INIT" << endl;
                         numEnemies = 10;
                         eachEnemyHealth = 25;
-                    }else if(wave == 3){
-                        cout << "DEBUG: WAVE 3 INIT" << endl;
+                    }else if (wave == 3){
                         numEnemies = 20;
-                        eachEnemyHealth = 27;
+                        eachEnemyHealth = 22;
                     }
-                    cout << "DEBUG: WAVE AND ENEMY (X, Y)" << wave << ", " << numEnemies << endl;
                     continue;
-                }else if(wave > 3){
+                }else{ // wave 3 completed
                     isWaveOver = true;
                     break;
                 }
