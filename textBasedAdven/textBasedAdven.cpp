@@ -462,20 +462,22 @@ void bossBattle(
         dynamicText(boss.voicelines[voiceLineIndex], 75, darkRed, true);
 
         int attackIndex = rand() % boss.attacks.size();
-        const BossAttack &attack = boss.attacks[attackIndex];
-        dynamicText(boss.name + " uses " + attack.name + " " + attack.description, 50, darkRed, true);
-        
+        const BossAttack &attack = boss.attacks[attackIndex]; 
         //enter block so boss doesnt use same move more than twice in a row
         if(bossUsedMoves.size() >= 1){
+            //cout << "DEBUG: IF BLOCK 1" << endl;
             if(bossUsedMoves.back() == attack.id or bossUsedMoves[bossUsedMoves.size() - 1] == attack.id){
+                //cout << "DEBUG: IF BLOCK 2" << endl;
                 while(bossUsedMoves.back() == attack.id or bossUsedMoves[bossUsedMoves.size() - 1] == attack.id){
+                    //cout << "DEBUG: WHILE LOOP" << endl;
                     attackIndex = rand() % boss.attacks.size();
                     const BossAttack &attack = boss.attacks[attackIndex];
+                    bossUsedMoves.push_back(attack.id);
                 }
             }
         }
         bossUsedMoves.push_back(attack.id);
-
+        dynamicText(boss.name + " uses " + attack.name + " " + attack.description, 50, darkRed, true);
 
         int damageTaken = attack.damage;
         damageTaken -= static_cast<int>(attack.damage * (damageReduction * totalArmorReduction));
@@ -910,8 +912,8 @@ int main()
         "Sword obtained from the remains of Lord Exodius, radiating his power when wielded",
         40,
         {
-            {"Midnight Cleave", 100, "A powerful cleave that channels the dark energy of Exodius, takes away 15 hp to use", 15},
-            {"Shadow Strike", 60, "A swift strike that harnesses the shadows, dealing heavy damage", 0},
+            {"Midnight Cleave", 125, "A powerful cleave that channels the dark energy of Exodius, takes away 15 hp to use", 15},
+            {"Shadow Strike", 95, "A swift strike that harnesses the shadows, dealing heavy damage", 0},
             {"Dark Wave", 150, "Unleash a wave of dark energy that damages all enemies, takes away 25 hp to use", 25}
         }
     ));
@@ -976,6 +978,13 @@ int main()
             int movelist = 0;
             vector<Skill> chosenSkills;
             //cant use the same move twice in a row
+
+            //check if user has potions in inventory
+            if(find(plyrInventory.begin(), plyrInventory.end(), "Health Potion") != plyrInventory.end()){
+                hasPotion = true;
+            }else{
+                hasPotion = false;
+            }
             
             cout << cyan << "-----------------INFO------------------" << endl;
             cout << green << "Health: " << playerHealth << endl;
@@ -1118,10 +1127,10 @@ int main()
 
                 //cout << "DEBUG: num enemi is " << numEnemies << endl;
                 vector<enemyAttack> enemyAttacks = {
-                    {1, 15 / numEnemies, "An enemy does a switch punch to your face -" + to_string( 25 / numEnemies) + " hp"},
-                    {2, 20 / numEnemies, "An enemy does a swift kick to your gut -" + to_string( 30 / numEnemies) + " hp"},
-                    {3, 25 / numEnemies, "An enemy does a heavy slam to your back -" + to_string( 35 / numEnemies) + " hp"},
-                    {4, 20 / numEnemies, "A group of enemies tackle you and pin you on the ground -" + to_string( 40 / numEnemies) + " hp"}
+                    {1, 15 / numEnemies, "An enemy does a switch punch to your face -" + to_string( 15 / numEnemies) + " hp"},
+                    {2, 20 / numEnemies, "An enemy does a swift kick to your gut -" + to_string( 20 / numEnemies) + " hp"},
+                    {3, 25 / numEnemies, "An enemy does a heavy slam to your back -" + to_string( 25 / numEnemies) + " hp"},
+                    {4, 20 / numEnemies, "A group of enemies tackle you and pin you on the ground -" + to_string( 20 / numEnemies) + " hp"}
                 };
 
                 //if user used binding move
@@ -1131,6 +1140,7 @@ int main()
                     for(int i = 0; i < round(numEnemies * 0.6); i++){ //if this block breaks, change to floor instead of round, otherwise remove the round functionality completely.
                         int attackIndex = rand() % enemyAttacks.size();
                         totalEnemyDmg += enemyAttacks[attackIndex].dmg;
+                        //cout << "DEBUG: ENEMY DMG LOGGED: " << enemyAttacks[attackIndex].dmg << endl;
                         dynamicText(enemyAttacks[attackIndex].desc, 50, red, true);
                     }
                     totalEnemyDmg -= static_cast<int>(totalEnemyDmg * (damageReduction));
@@ -1144,6 +1154,33 @@ int main()
                 }
             }
             
+            //ask user to use potion
+            if(hasPotion){
+                string usePotion;
+                dynamicText("Do you want to use a Health Potion? (yes/no)", 50, yellow, true);
+                getline(cin, usePotion);
+                //convert to lowercase
+                for(char &c : usePotion){
+                    c = tolower(c);
+                }
+                if(usePotion == "yes"){
+                    playerHealth += 20;
+                    if(playerHealth > 100) playerHealth = 100;
+                    dynamicText("Potion consumed, health +20", 50, green, true);
+                    //remove potion from inventory and itemsInBattle
+                    for(auto it = itemsInBattle.begin(); it != itemsInBattle.end(); ++it){
+                        if(*it == "Health Potion"){
+                            itemsInBattle.erase(it);
+                            auto invIt = find(plyrInventory.begin(), plyrInventory.end(), "Health Potion");
+                            if(invIt != plyrInventory.end()){
+                                plyrInventory.erase(invIt);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
             if(playerHealth <= 0){
                 isDead = true;
                 break;
