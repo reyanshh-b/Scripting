@@ -15,6 +15,7 @@ struct BossAttack
     string name;
     int damage;
     string description;
+    int id;
 };
 struct Boss
 {
@@ -311,8 +312,9 @@ void bossBattle(
     bool &isDead
 )
 {
-    while (boss.health > 0 && playerHealth > 0)
-    {
+    vector<int> usedMoves; // to track used moves
+    vector<int> bossUsedMoves;
+    while (boss.health > 0 && playerHealth > 0){
         // display health of exodius and player
         cout << red << "-----------------------------------" << endl;
         cout << darkRed << boss.name << " Health: " << boss.health << endl;
@@ -397,6 +399,17 @@ void bossBattle(
             continue;
         }
         cout << darkRed << "Chosen move: " << chosenSkills[chosenMove - 1].name << endl;
+
+        //block to prevent player from using same move more than twice in a row
+        if(usedMoves.size() >= 1){
+            if(usedMoves.back() == chosenMove or usedMoves[usedMoves.size() - 1] == chosenMove){
+                dynamicText("You cannot use the same move more than twice in a row!", 50, red, true);
+                continue;
+            }
+        }
+        usedMoves.push_back(chosenMove);
+
+
         int damage = chosenSkills[chosenMove - 1].damage;
         double damageReduction = 0.0;
         if (chosenSkills[chosenMove - 1].damageReduction > 0.0)
@@ -451,6 +464,19 @@ void bossBattle(
         int attackIndex = rand() % boss.attacks.size();
         const BossAttack &attack = boss.attacks[attackIndex];
         dynamicText(boss.name + " uses " + attack.name + " " + attack.description, 50, darkRed, true);
+        
+        //enter block so boss doesnt use same move more than twice in a row
+        if(bossUsedMoves.size() >= 1){
+            if(bossUsedMoves.back() == attack.id or bossUsedMoves[bossUsedMoves.size() - 1] == attack.id){
+                while(bossUsedMoves.back() == attack.id or bossUsedMoves[bossUsedMoves.size() - 1] == attack.id){
+                    attackIndex = rand() % boss.attacks.size();
+                    const BossAttack &attack = boss.attacks[attackIndex];
+                }
+            }
+        }
+        bossUsedMoves.push_back(attack.id);
+
+
         int damageTaken = attack.damage;
         damageTaken -= static_cast<int>(attack.damage * (damageReduction * totalArmorReduction));
         if(damageTaken < 0) damageTaken = 0;
@@ -841,9 +867,9 @@ int main()
     Boss exodius = {
         "Lord Exodius",
         250,
-        {{"Midnight Blade", 30, "dealing 30 damage!"},
-         {"Shadow Slash", 20, "dealing 20 damage!"},
-         {"Dark Pulse", 25, "dealing 25 damage!"}},
+        {{"Midnight Blade", 30, "dealing 30 damage!", 1},
+         {"Shadow Slash", 20, "dealing 20 damage!", 2},
+         {"Dark Pulse", 25, "dealing 25 damage!", 3}},
         {
             "[Lord Exodius]: I see how it is...",
             "[Lord Exodius]: Is that all you've got?",
@@ -1024,11 +1050,11 @@ int main()
             }
 
             usedMoves.push_back(chosenMove);
-            //cout << "DEBUG: USED MOVE LIST-- ";
+            /*cout << "DEBUG: USED MOVE LIST-- ";
             for(auto i = 0; i < usedMoves.size(); i++){
                 cout << usedMoves[i] << " ";
             }
-            cout << endl;
+            cout << endl;*/
 
             /*if(usedMoves[usedMoves.size() - 2] == chosenMove && usedMoves.size() > 1){
                 dynamicText("You cannot use the same move twice in a row!", 50, red, true);
@@ -1145,6 +1171,8 @@ int main()
             }
         }
     }
+
+    cout << "debug --- wave done" << endl;
 
     gameRunning = false;  // Tell the monitor thread to stop
     monitorThread.join(); // Wait for it to finish
