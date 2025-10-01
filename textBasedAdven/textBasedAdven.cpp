@@ -39,6 +39,8 @@ struct MagicAbilitySkill
     int removeHP;
     float damageReduction;
     bool isBinding;
+    int cooldownInt;
+    float chanceToDodge;
 };
 struct Armor{
     string name;
@@ -930,9 +932,9 @@ int main()
         false,
         false,
         {
-            {"Cloak", 0, "50/50 chance to dodge next attack", 0, 1.0},
-            {"Dark Strike", 70, "Materialize a spear in the palm of your hand and throw it at the enemy", 0, 0.0},
-            {"Shadow Bind", 0, "Bind the enemy in shadows, preventing them from attacking next turn", 0, 1.0, true}
+            {"Cloak", 0, "50/50 chance to dodge next attack", 0, 0.0, false, 1, 0.5},
+            {"Dark Strike", 70, "Materialize a spear in the palm of your hand and throw it at the enemy", 0, 0.0, false, 1, 0.0},
+            {"Shadow Bind", 0, "Bind the enemy in shadows, preventing them from attacking next turn", 0, 1.0, true, 2, 0.0}
         }
     ));
 
