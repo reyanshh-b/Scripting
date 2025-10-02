@@ -59,6 +59,7 @@ struct Skill
     int healthRemove;
     bool isBinding;
     float chanceDodge;
+    int cooldown;
 };
 
 class MagicAbility
@@ -1006,7 +1007,7 @@ int main()
                     cout << "[" << movelist << "] " << " " << magicabil.name << " (" << magicabil.damage << " damage): " << magicabil.description;
                     if(magicabil.isBinding) cout << " [Binding Ability]";
                     cout << endl;
-                    chosenSkills.push_back({magicabil.name, magicabil.damage, movelist, magicabil.damageReduction, magicabil.removeHP, magicabil.isBinding, magicabil.chanceToDodge});
+                    chosenSkills.push_back({magicabil.name, magicabil.damage, movelist, magicabil.damageReduction, magicabil.removeHP, magicabil.isBinding, magicabil.chanceToDodge, magicabil.cooldownInt});
                 }
                 if(magic.damage > 0) {
                     movelist++;
@@ -1053,11 +1054,23 @@ int main()
             if(usedMoves.size() >= 1){
                 //cout << "DEBUG: USEDMOVES.BACK() -- " << usedMoves.back() << endl;
             }
-            
+            int cooldown = chosenSkills[chosenMove - 1].cooldown;
+
             if(usedMoves.size() >= 1){//check if its not empty
-                if(usedMoves.back() == chosenMove or usedMoves[usedMoves.size() - 1] == chosenMove){
-                    dynamicText("You cannot use the same move twice in a row!", 50, red, true);
-                    continue;
+                if(cooldown >= 1){ //check if ability has cooldown metadata
+                    cout << "entered cooldown if statement" << endl;
+                    if(usedMoves.back() == chosenMove){ //if it was just used
+                        dynamicText("You cannot use the same move twice in a row!", 50, red, true);
+                        continue;
+                    }
+                    cout << "starting for loop" << endl;
+                    for(int i = 0; i = cooldown; i++){
+                        cout << "values for loop sees: " << usedMoves[usedMoves.size() - 1] << endl;
+                        if(usedMoves[usedMoves.size() - i + 1] == chosenMove){
+                            dynamicText("You cannot use the same move twice in a row!", 50, red, true);
+                            continue;
+                        }
+                    }
                 }
             }
 
@@ -1080,6 +1093,9 @@ int main()
                 continue;
             }
             usedMoves.push_back(chosenMove); */ //broken code --- intended purpose -> cant use same move twice in a row
+
+            
+            
             if(chosenSkills[chosenMove - 1].chanceDodge > 0.0){
                 //cout << "DETECTED CHANCE TO DODGE" << endl;
                 int dodge = rand() % 2;
