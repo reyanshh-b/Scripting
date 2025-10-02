@@ -58,6 +58,7 @@ struct Skill
     double damageReduction;
     int healthRemove;
     bool isBinding;
+    float chanceDodge;
 };
 
 class MagicAbility
@@ -1005,7 +1006,7 @@ int main()
                     cout << "[" << movelist << "] " << " " << magicabil.name << " (" << magicabil.damage << " damage): " << magicabil.description;
                     if(magicabil.isBinding) cout << " [Binding Ability]";
                     cout << endl;
-                    chosenSkills.push_back({magicabil.name, magicabil.damage, movelist, magicabil.damageReduction, magicabil.removeHP, magicabil.isBinding});
+                    chosenSkills.push_back({magicabil.name, magicabil.damage, movelist, magicabil.damageReduction, magicabil.removeHP, magicabil.isBinding, magicabil.chanceToDodge});
                 }
                 if(magic.damage > 0) {
                     movelist++;
@@ -1079,7 +1080,16 @@ int main()
                 continue;
             }
             usedMoves.push_back(chosenMove); */ //broken code --- intended purpose -> cant use same move twice in a row
-
+            if(chosenSkills[chosenMove - 1].chanceDodge > 0.0){
+                //cout << "DETECTED CHANCE TO DODGE" << endl;
+                int dodge = rand() % 2;
+                if(dodge == 0){
+                    dynamicText("You dodged all enemies, safe this round...", 50, cyan, true);
+                    continue;
+                }else{
+                    dynamicText("You failed to dodge any enemies!", 50, red, true);
+                }
+            }
             int damage = chosenSkills[chosenMove - 1].damage;
             int damageReduction = 0;
             damageReduction = chosenSkills[chosenMove - 1].damageReduction;
