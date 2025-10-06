@@ -1064,10 +1064,10 @@ int main()
                         continue;
                     }
                     cout << "starting for loop" << endl;
-                    for(int i = 0; i = cooldown; i++){
+                    for(int i = 0; i == cooldown; i++){
                         cout << "values for loop sees: " << usedMoves[usedMoves.size() - 1] << endl;
                         if(usedMoves[usedMoves.size() - i + 1] == chosenMove){
-                            dynamicText("You cannot use the same move twice in a row!", 50, red, true);
+                            dynamicText("You cannot use that move at the moment.", 50, red, true);
                             continue;
                         }
                     }
