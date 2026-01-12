@@ -11,4 +11,8 @@
 
   <h1> Java programs </h1>
   <p> If you go through my Java programs, you'll realise that Main.java is incomplete; that's because I abandoned the project. I attempted to create a game where the user travels in a car and has to reach a destination while fighting problems, such as oil leaks, bandits, etc. I realised this game would be nearly impossible to make on the command line console while looking user-friendly (the non-user-friendly version is a lot easier). Making a GUI version of it would be much simpler, but since I mostly program during school hours when I get bored on Codespaces, I can't use the necessary Java library to run the GUI handler.</p>
+
+
+  <h1>Python Honors Project</h1>
+  <p> The folder contains a Fuzzing script I wrote for my Freshman year Python I Honors Project. It allows the user to log into a CLI prompt where they can enter a URL to fuzz, and attempt different techniques to brute force the victim. However, the program assumes the user understands basic web-application fundementals such as Cookies, Headers, etc.</p>
 </html>
