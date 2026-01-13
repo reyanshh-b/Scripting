@@ -1,4 +1,6 @@
 """
+Py-Fuzz: A Python-based Fuzzer for Brute-Forcing Login Forms
+
 Reyansh Bansal
 
 This project provided insights into web security and Python development. The author noted the "requests" module’s intuitive nature, drawing parallels to Node.js Express. 
@@ -20,7 +22,9 @@ logins = [
 
 
 
-#simple login function to restrict access to the tool
+# This function is for user authentication before accessing the main functionality
+# Arguments: None
+# Returns: True if authentication is successful, otherwise None
 def login():
   """Authenticate user by validating credentials against hardcoded login list."""
   tries = 3
